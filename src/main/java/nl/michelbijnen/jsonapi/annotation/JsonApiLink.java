@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface JsonApiLink {
-    public JsonApiLinkType linkType() default JsonApiLinkType.SELF;
+    public JsonApiLinkType value() default JsonApiLinkType.SELF;
 }
