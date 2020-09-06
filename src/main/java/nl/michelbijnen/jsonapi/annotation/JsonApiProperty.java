@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface JsonApiId {
-    String value() default "id";
+public @interface JsonApiProperty {
+    String value();
 }
