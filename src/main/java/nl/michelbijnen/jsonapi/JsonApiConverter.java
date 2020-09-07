@@ -19,13 +19,13 @@ public class JsonApiConverter {
     public String convert() throws Exception {
         JSONObject finalJsonObject = new JSONObject();
         if (Collection.class.isAssignableFrom(this.object.getClass())) {
-            List<JSONObject> returnValues = new ArrayList<>();
+            finalJsonObject.put("links", JsonApiParser.parseToLinks(((Collection<Object>)this.object).iterator().next()));
+
+            List<JSONObject> data = new ArrayList<>();
             for (Object loopObject : (Collection<Object>) this.object) {
-                JSONObject loopJsonObject = new JSONObject();
-                loopJsonObject.put("links", JsonApiParser.parseToLinks(loopObject));
-                loopJsonObject.put("data", JsonApiParser.parseToData(loopObject));
-                returnValues.add(loopJsonObject);
+                data.add(JsonApiParser.parseToData(loopObject));
             }
+            finalJsonObject.put("data", data);
         }
         else {
             finalJsonObject.put("links", JsonApiParser.parseToLinks(this.object));

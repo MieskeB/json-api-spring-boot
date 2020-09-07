@@ -41,7 +41,10 @@ public class Application {
         userDto.setChildObjectSelfRel("http://localhost:8080/users/4/relationships/childObjects");
         userDto.setChildObjectRelatedRel("http://localhost:8080/users/4/childObjects");
 
-        JsonApiConverter jsonApiConverter = new JsonApiConverter(userDto);
+        List<UserDto> userDtos = new ArrayList<>();
+        userDtos.add(userDto);
+
+        JsonApiConverter jsonApiConverter = new JsonApiConverter(userDtos);
         System.out.println(jsonApiConverter.convert());
     }
 }
