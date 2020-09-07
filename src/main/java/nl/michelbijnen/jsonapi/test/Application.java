@@ -1,5 +1,6 @@
-package nl.michelbijnen.jsonapi;
+package nl.michelbijnen.jsonapi.test;
 
+import nl.michelbijnen.jsonapi.JsonApiConverter;
 import nl.michelbijnen.jsonapi.test.ObjectDto;
 import nl.michelbijnen.jsonapi.test.UserDto;
 
