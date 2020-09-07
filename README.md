@@ -15,7 +15,7 @@ For maven, add the following dependency to your dependencies:
 
 Do the same if you are using gradle:
 ```
-implementation 'nl.michelbijnen.jsonapi:json-api:1.0.0'
+implementation 'nl.michelbijnen.jsonapi:json-api:1.1.1'
 ```
 
 (Don't forget to (re)import all your dependencies afterwards)
