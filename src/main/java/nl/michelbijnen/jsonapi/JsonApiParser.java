@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class JsonApiParser {
+class JsonApiParser {
     static JSONObject parseRelationship(Object object, Field field) throws Exception {
         JSONObject relationship = new JSONObject();
         JSONObject links = new JSONObject();
