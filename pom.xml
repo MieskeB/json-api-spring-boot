@@ -5,8 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>nl.michelbijnen.jsonapi</groupId>
-    <artifactId>json-api-spring-boot</artifactId>
+    <artifactId>json-api</artifactId>
     <version>0.1</version>
+    <packaging>jar</packaging>
+
+    <name>json-api-converter</name>
+    <description>Converter for DTOs to json:api</description>
+    <url>https://www.michelbijnen.nl/</url>
 
     <properties>
         <java.version>1.8</java.version>
@@ -29,5 +34,30 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+                <executions>
+                    <execution>
+                        <id>default-deploy</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>JsonApiConverter</id>
+            <url>https://</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>
