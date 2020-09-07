@@ -3,6 +3,8 @@ package nl.michelbijnen.jsonapi.test;
 import nl.michelbijnen.jsonapi.annotation.*;
 import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
 
+import java.util.List;
+
 @JsonApiObject("User")
 public class UserDto {
     @JsonApiId
@@ -13,8 +15,11 @@ public class UserDto {
     @JsonApiProperty
     private String email;
 
-    @JsonApiRelation("Cool")
-    private ObjectDto theCoolObject;
+    @JsonApiRelation(value = "mainObject", self = "http://localhost:8080/user/1/objects", related = "http://localhost:8080/user/1/objets")
+    private ObjectDto mainObject;
+
+    @JsonApiRelation(value = "childObjects", self = "http://localhost:8080/user/1/objects", related = "http://localhost:8080/user/1/objets")
+    private List<ObjectDto> childObjects;
 
     @JsonApiLink
     private String selfRel;
@@ -61,11 +66,19 @@ public class UserDto {
         this.nextRel = nextRel;
     }
 
-    public ObjectDto getTheCoolObject() {
-        return theCoolObject;
+    public ObjectDto getMainObject() {
+        return mainObject;
     }
 
-    public void setTheCoolObject(ObjectDto theCoolObject) {
-        this.theCoolObject = theCoolObject;
+    public void setMainObject(ObjectDto mainObject) {
+        this.mainObject = mainObject;
+    }
+
+    public List<ObjectDto> getChildObjects() {
+        return childObjects;
+    }
+
+    public void setChildObjects(List<ObjectDto> childObjects) {
+        this.childObjects = childObjects;
     }
 }

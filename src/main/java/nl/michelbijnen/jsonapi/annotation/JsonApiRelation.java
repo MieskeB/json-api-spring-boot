@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface JsonApiRelation {
     public String value();
-    public boolean include() default true;
+    public String self() default "";
+    public String related() default "";
 }

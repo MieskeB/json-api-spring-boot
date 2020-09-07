@@ -4,7 +4,6 @@ import nl.michelbijnen.jsonapi.annotation.*;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 import org.json.JSONObject;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,23 +71,31 @@ public class JsonApiConverter {
         JSONObject relationship = new JSONObject();
         JSONObject links = new JSONObject();
 
-        Object relationObject = new GetterAndSetter().callGetter(this.object, field.getName());
 
+        // Add the links
         for (Field relationField : this.object.getClass().getDeclaredFields()) {
-            if (relationField.isAnnotationPresent(JsonApiLink.class)) {
-                links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(this.object, relationField.getName()));
+            if (relationField.isAnnotationPresent(JsonApiRelation.class)) {
+                if (!relationField.getAnnotation(JsonApiRelation.class).self().equals("")) {
+                    links.put("self", relationField.getAnnotation(JsonApiRelation.class).self());
+                }
+                if (!relationField.getAnnotation(JsonApiRelation.class).related().equals("")) {
+                    links.put("related", relationField.getAnnotation(JsonApiRelation.class).related());
+                }
+                break;
             }
         }
+
 
         // Check if it is a list
         if (Collection.class.isAssignableFrom(field.getType())) {
             List<JSONObject> dataForEach = new ArrayList<>();
-            for (Object dataObject : (Collection<Object>) field.get(this.object)) {
+            for (Object relationObject : (Collection<Object>) new GetterAndSetter().callGetter(this.object, field.getName())) {
+
                 JSONObject dataObjectForEach = new JSONObject();
-                dataObjectForEach.put("type", dataObject.getClass().getAnnotation(JsonApiObject.class).value());
-                for (Field relationField : dataObject.getClass().getDeclaredFields()) {
+                dataObjectForEach.put("type", relationObject.getClass().getAnnotation(JsonApiObject.class).value());
+                for (Field relationField : relationObject.getClass().getDeclaredFields()) {
                     if (relationField.isAnnotationPresent(JsonApiId.class)) {
-                        dataObjectForEach.put("id", relationField.get(dataObject));
+                        dataObjectForEach.put("id", new GetterAndSetter().callGetter(relationObject, relationField.getName()));
                         break;
                     }
                 }
@@ -98,6 +105,8 @@ public class JsonApiConverter {
         }
         // If it's just one data object
         else {
+            Object relationObject = new GetterAndSetter().callGetter(this.object, field.getName());
+
             JSONObject data = new JSONObject();
             data.put("type", relationObject.getClass().getAnnotation(JsonApiObject.class).value());
             for (Field relationField : relationObject.getClass().getDeclaredFields()) {
