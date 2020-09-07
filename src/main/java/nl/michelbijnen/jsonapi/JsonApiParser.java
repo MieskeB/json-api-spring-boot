@@ -10,6 +10,55 @@ import java.util.Collection;
 import java.util.List;
 
 class JsonApiParser {
+    static JSONObject parseToLinks(Object object) throws Exception {
+        JSONObject links = new JSONObject();
+        for (Field field : object.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(JsonApiLink.class)) {
+                if (field.getAnnotation(JsonApiLink.class).relation().equals("")) {
+                    links.put(field.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(object, field.getName()));
+                }
+            }
+        }
+        return links;
+    }
+
+    static JSONObject parseToData(Object object) throws Exception {
+        JSONObject data = new JSONObject();
+        JSONObject relationships = new JSONObject();
+        JSONObject attributes = new JSONObject();
+        List<JSONObject> included = new ArrayList<>();
+
+        data.put("type", object.getClass().getAnnotation(JsonApiObject.class).value());
+        for (Field field : object.getClass().getDeclaredFields()) {
+            // Add the id
+            if (field.isAnnotationPresent(JsonApiId.class)) {
+                data.put("id", new GetterAndSetter().callGetter(object, field.getName()));
+            }
+            // Add the properties
+            else if (field.isAnnotationPresent(JsonApiProperty.class)) {
+                attributes.put(field.getName(), new GetterAndSetter().callGetter(object, field.getName()));
+            }
+            // Add the relations
+            else if (field.isAnnotationPresent(JsonApiRelation.class)) {
+                relationships.put(field.getAnnotation(JsonApiRelation.class).value(), parseRelationship(object, field));
+                Object relationObject = new GetterAndSetter().callGetter(object, field.getName());
+                if (Collection.class.isAssignableFrom(relationObject.getClass())) {
+                    for (Object loopRelationObject : (Collection<Object>) relationObject) {
+                        included.add(parseInclude(loopRelationObject));
+                    }
+                } else {
+                    included.add(parseInclude(relationObject));
+                }
+            }
+        }
+
+        data.put("attributes", attributes);
+        data.put("relationships", relationships);
+        data.put("included", included);
+
+        return data;
+    }
+
     static JSONObject parseRelationship(Object object, Field field) throws Exception {
         JSONObject relationship = new JSONObject();
         JSONObject links = new JSONObject();
