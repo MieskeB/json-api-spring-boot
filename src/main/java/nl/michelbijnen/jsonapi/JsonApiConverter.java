@@ -13,14 +13,6 @@ public class JsonApiConverter {
     private final Object object;
 
     public JsonApiConverter(Object object) throws Exception {
-        if (!object.getClass().isAnnotationPresent(JsonApiObject.class)) {
-            throw new Exception("The reference @JsonApiObject isn't present in specified class");
-        }
-//        TODO fix following lines
-//        if (!object.getClass().isAnnotationPresent(JsonApiId.class)) {
-//            throw new Exception("The reference @JsonApiId isn't present in specified class");
-//        }
-
         this.object = object;
     }
 
