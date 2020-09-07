@@ -9,9 +9,9 @@ public class GetterAndSetter {
         pd.getWriteMethod().invoke(obj, value);
     }
 
-    public String callGetter(Object obj, String fieldName) throws Exception {
+    public Object callGetter(Object obj, String fieldName) throws Exception {
         PropertyDescriptor pd;
         pd = new PropertyDescriptor(fieldName, obj.getClass());
-        return "" + pd.getReadMethod().invoke(obj);
+        return pd.getReadMethod().invoke(obj);
     }
 }

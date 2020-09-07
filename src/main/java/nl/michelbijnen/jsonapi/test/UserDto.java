@@ -1,19 +1,21 @@
-package nl.michelbijnen.jsonapi;
+package nl.michelbijnen.jsonapi.test;
 
-import nl.michelbijnen.jsonapi.annotation.JsonApiId;
-import nl.michelbijnen.jsonapi.annotation.JsonApiLink;
-import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
-import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
+import nl.michelbijnen.jsonapi.annotation.*;
 import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
 
 @JsonApiObject("User")
 public class UserDto {
     @JsonApiId
     private String id;
+
     @JsonApiProperty
     private String username;
     @JsonApiProperty
     private String email;
+
+    @JsonApiRelation("Cool")
+    private ObjectDto theCoolObject;
+
     @JsonApiLink
     private String selfRel;
     @JsonApiLink(JsonApiLinkType.NEXT)
@@ -57,5 +59,13 @@ public class UserDto {
 
     public void setNextRel(String nextRel) {
         this.nextRel = nextRel;
+    }
+
+    public ObjectDto getTheCoolObject() {
+        return theCoolObject;
+    }
+
+    public void setTheCoolObject(ObjectDto theCoolObject) {
+        this.theCoolObject = theCoolObject;
     }
 }

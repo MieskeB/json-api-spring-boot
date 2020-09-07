@@ -1,13 +1,14 @@
 package nl.michelbijnen.jsonapi;
 
-import nl.michelbijnen.jsonapi.annotation.JsonApiId;
-import nl.michelbijnen.jsonapi.annotation.JsonApiLink;
-import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
-import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
+import nl.michelbijnen.jsonapi.annotation.*;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 import org.json.JSONObject;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class JsonApiConverter {
     private final Object object;
@@ -43,16 +44,73 @@ public class JsonApiConverter {
 
     private JSONObject parseToData() throws Exception {
         JSONObject data = new JSONObject();
+        JSONObject relationships = new JSONObject();
+        JSONObject included = new JSONObject();
 
         data.put("type", this.object.getClass().getAnnotation(JsonApiObject.class).value());
         for (Field field : this.object.getClass().getDeclaredFields()) {
+            // Add the id
             if (field.isAnnotationPresent(JsonApiId.class)) {
                 data.put("id", new GetterAndSetter().callGetter(this.object, field.getName()));
-            } else if (field.isAnnotationPresent(JsonApiProperty.class)) {
+            }
+            // Add the properties
+            else if (field.isAnnotationPresent(JsonApiProperty.class)) {
                 data.put(field.getName(), new GetterAndSetter().callGetter(this.object, field.getName()));
+            }
+            // Add the relations
+            else if (field.isAnnotationPresent(JsonApiRelation.class)) {
+                relationships.put(field.getAnnotation(JsonApiRelation.class).value(), this.parseRelationship(field));
             }
         }
 
+        data.put("relationships", relationships);
+
         return data;
+    }
+
+    private JSONObject parseRelationship(Field field) throws Exception {
+        JSONObject relationship = new JSONObject();
+        JSONObject links = new JSONObject();
+
+        Object relationObject = new GetterAndSetter().callGetter(this.object, field.getName());
+
+        for (Field relationField : this.object.getClass().getDeclaredFields()) {
+            if (relationField.isAnnotationPresent(JsonApiLink.class)) {
+                links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(this.object, relationField.getName()));
+            }
+        }
+
+        // Check if it is a list
+        if (Collection.class.isAssignableFrom(field.getType())) {
+            List<JSONObject> dataForEach = new ArrayList<>();
+            for (Object dataObject : (Collection<Object>) field.get(this.object)) {
+                JSONObject dataObjectForEach = new JSONObject();
+                dataObjectForEach.put("type", dataObject.getClass().getAnnotation(JsonApiObject.class).value());
+                for (Field relationField : dataObject.getClass().getDeclaredFields()) {
+                    if (relationField.isAnnotationPresent(JsonApiId.class)) {
+                        dataObjectForEach.put("id", relationField.get(dataObject));
+                        break;
+                    }
+                }
+                dataForEach.add(dataObjectForEach);
+            }
+            relationship.put("data", dataForEach);
+        }
+        // If it's just one data object
+        else {
+            JSONObject data = new JSONObject();
+            data.put("type", relationObject.getClass().getAnnotation(JsonApiObject.class).value());
+            for (Field relationField : relationObject.getClass().getDeclaredFields()) {
+                if (relationField.isAnnotationPresent(JsonApiId.class)) {
+                    data.put("id", new GetterAndSetter().callGetter(relationObject, relationField.getName()));
+                    break;
+                }
+            }
+            relationship.put("data", data);
+        }
+
+        relationship.put("links", links);
+
+        return relationship;
     }
 }
