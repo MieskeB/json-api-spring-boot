@@ -75,11 +75,4 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>JsonApiConverter</id>
-            <url>https://</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 </project>
