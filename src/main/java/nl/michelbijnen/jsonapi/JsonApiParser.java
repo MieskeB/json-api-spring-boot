@@ -1,0 +1,87 @@
+package nl.michelbijnen.jsonapi;
+
+import nl.michelbijnen.jsonapi.annotation.*;
+import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
+import org.json.JSONObject;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+public class JsonApiParser {
+    static JSONObject parseRelationship(Object object, Field field) throws Exception {
+        JSONObject relationship = new JSONObject();
+        JSONObject links = new JSONObject();
+
+        // Add the links
+        for (Field relationField : object.getClass().getDeclaredFields()) {
+            if (relationField.isAnnotationPresent(JsonApiLink.class)) {
+                if (relationField.getAnnotation(JsonApiLink.class).relation().equals(field.getAnnotation(JsonApiRelation.class).value())) {
+                    links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(object, relationField.getName()));
+                }
+            }
+        }
+
+
+        // Check if it is a list
+        if (Collection.class.isAssignableFrom(field.getType())) {
+            List<JSONObject> dataForEach = new ArrayList<>();
+            for (Object relationObject : (Collection<Object>) new GetterAndSetter().callGetter(object, field.getName())) {
+
+                JSONObject dataObjectForEach = new JSONObject();
+                dataObjectForEach.put("type", relationObject.getClass().getAnnotation(JsonApiObject.class).value());
+                for (Field relationField : relationObject.getClass().getDeclaredFields()) {
+                    if (relationField.isAnnotationPresent(JsonApiId.class)) {
+                        dataObjectForEach.put("id", new GetterAndSetter().callGetter(relationObject, relationField.getName()));
+                        break;
+                    }
+                }
+                dataForEach.add(dataObjectForEach);
+            }
+            relationship.put("data", dataForEach);
+        }
+        // If it's just one data object
+        else {
+            Object relationObject = new GetterAndSetter().callGetter(object, field.getName());
+
+            JSONObject data = new JSONObject();
+            data.put("type", relationObject.getClass().getAnnotation(JsonApiObject.class).value());
+            for (Field relationField : relationObject.getClass().getDeclaredFields()) {
+                if (relationField.isAnnotationPresent(JsonApiId.class)) {
+                    data.put("id", new GetterAndSetter().callGetter(relationObject, relationField.getName()));
+                    break;
+                }
+            }
+            relationship.put("data", data);
+        }
+
+        relationship.put("links", links);
+
+        return relationship;
+    }
+
+    static JSONObject parseInclude(Object object) throws Exception {
+        JSONObject include = new JSONObject();
+        JSONObject attributes = new JSONObject();
+        JSONObject links = new JSONObject();
+
+        include.put("type", object.getClass().getAnnotation(JsonApiObject.class).value());
+
+        for (Field relationField : object.getClass().getDeclaredFields()) {
+            if (relationField.isAnnotationPresent(JsonApiId.class)) {
+                include.put("id", new GetterAndSetter().callGetter(object, relationField.getName()));
+            }
+            if (relationField.isAnnotationPresent(JsonApiProperty.class)) {
+                attributes.put(relationField.getName(), new GetterAndSetter().callGetter(object, relationField.getName()));
+            }
+            if (relationField.isAnnotationPresent(JsonApiLink.class)) {
+                links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(object, relationField.getName()));
+            }
+        }
+
+        include.put("attributes", attributes);
+        include.put("links", links);
+        return include;
+    }
+}

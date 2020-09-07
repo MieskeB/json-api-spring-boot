@@ -46,7 +46,7 @@ public class JsonApiConverter {
     private JSONObject parseToData() throws Exception {
         JSONObject data = new JSONObject();
         JSONObject relationships = new JSONObject();
-        JSONObject included = new JSONObject();
+        List<JSONObject> included = new ArrayList<>();
 
         data.put("type", this.object.getClass().getAnnotation(JsonApiObject.class).value());
         for (Field field : this.object.getClass().getDeclaredFields()) {
@@ -60,63 +60,22 @@ public class JsonApiConverter {
             }
             // Add the relations
             else if (field.isAnnotationPresent(JsonApiRelation.class)) {
-                relationships.put(field.getAnnotation(JsonApiRelation.class).value(), this.parseRelationship(field));
+                relationships.put(field.getAnnotation(JsonApiRelation.class).value(), JsonApiParser.parseRelationship(this.object, field));
+                Object relationObject = new GetterAndSetter().callGetter(this.object, field.getName());
+                if (Collection.class.isAssignableFrom(relationObject.getClass())) {
+                    for (Object loopRelationObject : (Collection<Object>) relationObject) {
+                        included.add(JsonApiParser.parseInclude(loopRelationObject));
+                    }
+                }
+                else {
+                    included.add(JsonApiParser.parseInclude(relationObject));
+                }
             }
         }
 
         data.put("relationships", relationships);
+        data.put("included", included);
 
         return data;
-    }
-
-    private JSONObject parseRelationship(Field field) throws Exception {
-        JSONObject relationship = new JSONObject();
-        JSONObject links = new JSONObject();
-
-        // Add the links
-        for (Field relationField : this.object.getClass().getDeclaredFields()) {
-            if (relationField.isAnnotationPresent(JsonApiLink.class)) {
-                if (relationField.getAnnotation(JsonApiLink.class).relation().equals(field.getAnnotation(JsonApiRelation.class).value())) {
-                    links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(this.object, relationField.getName()));
-                }
-            }
-        }
-
-
-        // Check if it is a list
-        if (Collection.class.isAssignableFrom(field.getType())) {
-            List<JSONObject> dataForEach = new ArrayList<>();
-            for (Object relationObject : (Collection<Object>) new GetterAndSetter().callGetter(this.object, field.getName())) {
-
-                JSONObject dataObjectForEach = new JSONObject();
-                dataObjectForEach.put("type", relationObject.getClass().getAnnotation(JsonApiObject.class).value());
-                for (Field relationField : relationObject.getClass().getDeclaredFields()) {
-                    if (relationField.isAnnotationPresent(JsonApiId.class)) {
-                        dataObjectForEach.put("id", new GetterAndSetter().callGetter(relationObject, relationField.getName()));
-                        break;
-                    }
-                }
-                dataForEach.add(dataObjectForEach);
-            }
-            relationship.put("data", dataForEach);
-        }
-        // If it's just one data object
-        else {
-            Object relationObject = new GetterAndSetter().callGetter(this.object, field.getName());
-
-            JSONObject data = new JSONObject();
-            data.put("type", relationObject.getClass().getAnnotation(JsonApiObject.class).value());
-            for (Field relationField : relationObject.getClass().getDeclaredFields()) {
-                if (relationField.isAnnotationPresent(JsonApiId.class)) {
-                    data.put("id", new GetterAndSetter().callGetter(relationObject, relationField.getName()));
-                    break;
-                }
-            }
-            relationship.put("data", data);
-        }
-
-        relationship.put("links", links);
-
-        return relationship;
     }
 }
