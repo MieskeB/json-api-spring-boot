@@ -11,4 +11,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface JsonApiLink {
     public JsonApiLinkType value() default JsonApiLinkType.SELF;
+    public String relation() default "";
 }

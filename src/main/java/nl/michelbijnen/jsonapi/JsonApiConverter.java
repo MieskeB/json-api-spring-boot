@@ -35,7 +35,9 @@ public class JsonApiConverter {
         JSONObject links = new JSONObject();
         for (Field field : this.object.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(JsonApiLink.class)) {
-                links.put(field.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(this.object, field.getName()));
+                if (field.getAnnotation(JsonApiLink.class).relation().equals("")) {
+                    links.put(field.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(this.object, field.getName()));
+                }
             }
         }
         return links;
@@ -71,17 +73,12 @@ public class JsonApiConverter {
         JSONObject relationship = new JSONObject();
         JSONObject links = new JSONObject();
 
-
         // Add the links
         for (Field relationField : this.object.getClass().getDeclaredFields()) {
-            if (relationField.isAnnotationPresent(JsonApiRelation.class)) {
-                if (!relationField.getAnnotation(JsonApiRelation.class).self().equals("")) {
-                    links.put("self", relationField.getAnnotation(JsonApiRelation.class).self());
+            if (relationField.isAnnotationPresent(JsonApiLink.class)) {
+                if (relationField.getAnnotation(JsonApiLink.class).relation().equals(field.getAnnotation(JsonApiRelation.class).value())) {
+                    links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(this.object, relationField.getName()));
                 }
-                if (!relationField.getAnnotation(JsonApiRelation.class).related().equals("")) {
-                    links.put("related", relationField.getAnnotation(JsonApiRelation.class).related());
-                }
-                break;
             }
         }
 

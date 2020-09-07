@@ -15,11 +15,19 @@ public class UserDto {
     @JsonApiProperty
     private String email;
 
-    @JsonApiRelation(value = "mainObject", self = "http://localhost:8080/user/1/objects", related = "http://localhost:8080/user/1/objets")
+    @JsonApiRelation(value = "mainObject")
     private ObjectDto mainObject;
+    @JsonApiLink(relation = "mainObject")
+    private String mainObjectSelfRel;
+    @JsonApiLink(value = JsonApiLinkType.RELATED, relation = "mainObject")
+    private String mainObjectRelatedRel;
 
-    @JsonApiRelation(value = "childObjects", self = "http://localhost:8080/user/1/objects", related = "http://localhost:8080/user/1/objets")
+    @JsonApiRelation(value = "childObjects")
     private List<ObjectDto> childObjects;
+    @JsonApiLink(relation = "childObjects")
+    private String childObjectSelfRel;
+    @JsonApiLink(value = JsonApiLinkType.RELATED, relation = "childObjects")
+    private String childObjectRelatedRel;
 
     @JsonApiLink
     private String selfRel;
@@ -80,5 +88,37 @@ public class UserDto {
 
     public void setChildObjects(List<ObjectDto> childObjects) {
         this.childObjects = childObjects;
+    }
+
+    public String getMainObjectSelfRel() {
+        return mainObjectSelfRel;
+    }
+
+    public void setMainObjectSelfRel(String mainObjectSelfRel) {
+        this.mainObjectSelfRel = mainObjectSelfRel;
+    }
+
+    public String getMainObjectRelatedRel() {
+        return mainObjectRelatedRel;
+    }
+
+    public void setMainObjectRelatedRel(String mainObjectRelatedRel) {
+        this.mainObjectRelatedRel = mainObjectRelatedRel;
+    }
+
+    public String getChildObjectSelfRel() {
+        return childObjectSelfRel;
+    }
+
+    public void setChildObjectSelfRel(String childObjectSelfRel) {
+        this.childObjectSelfRel = childObjectSelfRel;
+    }
+
+    public String getChildObjectRelatedRel() {
+        return childObjectRelatedRel;
+    }
+
+    public void setChildObjectRelatedRel(String childObjectRelatedRel) {
+        this.childObjectRelatedRel = childObjectRelatedRel;
     }
 }

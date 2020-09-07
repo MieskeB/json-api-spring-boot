@@ -5,5 +5,6 @@ public enum JsonApiLinkType {
     PREVIOUS,
     SELF,
     NEXT,
-    LAST
+    LAST,
+    RELATED
 }
