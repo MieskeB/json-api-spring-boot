@@ -46,6 +46,7 @@ public class JsonApiConverter {
     private JSONObject parseToData() throws Exception {
         JSONObject data = new JSONObject();
         JSONObject relationships = new JSONObject();
+        JSONObject attributes = new JSONObject();
         List<JSONObject> included = new ArrayList<>();
 
         data.put("type", this.object.getClass().getAnnotation(JsonApiObject.class).value());
@@ -56,7 +57,7 @@ public class JsonApiConverter {
             }
             // Add the properties
             else if (field.isAnnotationPresent(JsonApiProperty.class)) {
-                data.put(field.getName(), new GetterAndSetter().callGetter(this.object, field.getName()));
+                attributes.put(field.getName(), new GetterAndSetter().callGetter(this.object, field.getName()));
             }
             // Add the relations
             else if (field.isAnnotationPresent(JsonApiRelation.class)) {
@@ -73,6 +74,7 @@ public class JsonApiConverter {
             }
         }
 
+        data.put("attributes", attributes);
         data.put("relationships", relationships);
         data.put("included", included);
 
