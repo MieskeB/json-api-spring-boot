@@ -11,7 +11,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class LinkTest {
+public class DataTest {
 
     private ObjectDto objectDto;
     private UserDto userDto;
@@ -24,44 +24,37 @@ public class LinkTest {
     }
 
     @Test
-    public void testIfLinksExists() throws Exception {
+    public void testIfDataExists() throws Exception {
         JsonApiConverter converter = new JsonApiConverter(objectDto);
         JSONObject jsonObject = new JSONObject(converter.convert());
-        assertNotNull(jsonObject.getJSONObject("links"));
+        assertNotNull(jsonObject.getJSONObject("data"));
     }
 
     @Test
-    public void testIfFirstRelWorks() throws Exception {
+    public void testIfIdWorks() throws Exception {
         JsonApiConverter converter = new JsonApiConverter(objectDto);
         JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getFirstRel(), jsonObject.getJSONObject("links").getString("first"));
+        assertEquals(objectDto.getId(), jsonObject.getJSONObject("data").getString("id"));
     }
 
     @Test
-    public void testIfPreviousRelWorks() throws Exception {
+    public void testIfTypeWorks() throws Exception {
         JsonApiConverter converter = new JsonApiConverter(objectDto);
         JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getPreviousRel(), jsonObject.getJSONObject("links").getString("previous"));
+        assertEquals("Object", jsonObject.getJSONObject("data").getString("type"));
     }
 
     @Test
-    public void testIfSelfRelWorks() throws Exception {
+    public void testIfAttributesExists() throws Exception {
         JsonApiConverter converter = new JsonApiConverter(objectDto);
         JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getSelfRel(), jsonObject.getJSONObject("links").getString("self"));
+        assertNotNull(jsonObject.getJSONObject("data").getJSONObject("attributes"));
     }
 
     @Test
-    public void testIfNextRelWorks() throws Exception {
+    public void testIfAttributeNameWorks() throws Exception {
         JsonApiConverter converter = new JsonApiConverter(objectDto);
         JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getNextRel(), jsonObject.getJSONObject("links").getString("next"));
-    }
-
-    @Test
-    public void testIfLastRelWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getLastRel(), jsonObject.getJSONObject("links").getString("last"));
+        assertEquals(objectDto.getName(), jsonObject.getJSONObject("data").getJSONObject("attributes").getString("name"));
     }
 }
