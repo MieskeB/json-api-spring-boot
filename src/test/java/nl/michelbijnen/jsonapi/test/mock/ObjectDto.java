@@ -1,4 +1,4 @@
-package nl.michelbijnen.jsonapi.test;
+package nl.michelbijnen.jsonapi.test.mock;
 
 import nl.michelbijnen.jsonapi.annotation.*;
 import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
@@ -14,10 +14,16 @@ public class ObjectDto {
     @JsonApiRelation("Owner")
     private UserDto owner;
 
+    @JsonApiLink(JsonApiLinkType.FIRST)
+    private String firstRel;
+    @JsonApiLink(JsonApiLinkType.PREVIOUS)
+    private String previousRel;
     @JsonApiLink
     private String selfRel;
     @JsonApiLink(JsonApiLinkType.NEXT)
     private String nextRel;
+    @JsonApiLink(JsonApiLinkType.LAST)
+    private String lastRel;
 
     public String getId() {
         return id;
@@ -57,5 +63,29 @@ public class ObjectDto {
 
     public void setNextRel(String nextRel) {
         this.nextRel = nextRel;
+    }
+
+    public String getFirstRel() {
+        return firstRel;
+    }
+
+    public void setFirstRel(String firstRel) {
+        this.firstRel = firstRel;
+    }
+
+    public String getPreviousRel() {
+        return previousRel;
+    }
+
+    public void setPreviousRel(String previousRel) {
+        this.previousRel = previousRel;
+    }
+
+    public String getLastRel() {
+        return lastRel;
+    }
+
+    public void setLastRel(String lastRel) {
+        this.lastRel = lastRel;
     }
 }

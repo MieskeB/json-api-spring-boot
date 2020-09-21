@@ -1,4 +1,4 @@
-package nl.michelbijnen.jsonapi.test;
+package nl.michelbijnen.jsonapi.test.mock;
 
 import nl.michelbijnen.jsonapi.annotation.*;
 import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
