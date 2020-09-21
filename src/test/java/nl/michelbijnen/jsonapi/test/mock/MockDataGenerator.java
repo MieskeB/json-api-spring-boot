@@ -33,20 +33,20 @@ public class MockDataGenerator {
         {
             childObject1.setId("childobject1");
             childObject1.setName("the first child object");
-            mainObject.setFirstRel("http://localhost:8080/objects/1");
-            mainObject.setPreviousRel("http://localhost:8080/objects/2");
+            childObject1.setFirstRel("http://localhost:8080/objects/1");
+            childObject1.setPreviousRel("http://localhost:8080/objects/2");
             childObject1.setSelfRel("http://localhost:8080/objects/3");
             childObject1.setNextRel("http://localhost:8080/objects/4");
-            mainObject.setLastRel("http://localhost:8080/objects/5");
+            childObject1.setLastRel("http://localhost:8080/objects/5");
         }
         {
-            childObject1.setId("childobject2");
-            childObject1.setName("the second child object");
-            mainObject.setFirstRel("http://localhost:8080/objects/1");
-            mainObject.setPreviousRel("http://localhost:8080/objects/3");
-            childObject1.setSelfRel("http://localhost:8080/objects/4");
-            childObject1.setNextRel("http://localhost:8080/objects/5");
-            mainObject.setLastRel("http://localhost:8080/objects/5");
+            childObject2.setId("childobject2");
+            childObject2.setName("the second child object");
+            childObject2.setFirstRel("http://localhost:8080/objects/1");
+            childObject2.setPreviousRel("http://localhost:8080/objects/3");
+            childObject2.setSelfRel("http://localhost:8080/objects/4");
+            childObject2.setNextRel("http://localhost:8080/objects/5");
+            childObject2.setLastRel("http://localhost:8080/objects/5");
         }
 
         // Adding the objects to the user dtos
