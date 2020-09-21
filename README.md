@@ -1,4 +1,5 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.michelbijnen.jsonapi/json-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.michelbijnen.jsonapi/json-api)
+[![codecov](https://codecov.io/gh/MieskeB/json-api-spring-boot/branch/master/graph/badge.svg)](https://codecov.io/gh/MieskeB/json-api-spring-boot)
 
 # json-api-spring-boot
 This project converts a normal Java object to json:api standard. More information about json:api can be found here: https://jsonapi.org/
