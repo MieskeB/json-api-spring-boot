@@ -75,6 +75,16 @@ public class MockDataGenerator {
             mainObject.setOwnerSelfRel("http://localhost:8080/objects/2/relationships/owner");
             mainObject.setOwnerRelatedRel("http://localhost:8080/objects/2/owner");
         }
+        {
+            childObject1.setOwner(owner);
+            childObject1.setOwnerSelfRel("http://localhost:8080/objects/3/relationships/owner");
+            childObject1.setOwnerRelatedRel("http://localhost:8080/objects/3/owner");
+        }
+        {
+            childObject2.setOwner(owner);
+            childObject2.setOwnerSelfRel("http://localhost:8080/objects/4/relationships/owner");
+            childObject2.setOwnerRelatedRel("http://localhost:8080/objects/4/owner");
+        }
     }
 
     private static MockDataGenerator mockDataGenerator = new MockDataGenerator();
