@@ -6,7 +6,7 @@
 
     <groupId>nl.michelbijnen.jsonapi</groupId>
     <artifactId>json-api</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
 
     <name>nl.michelbijnen.jsonapi:json-api-converter</name>
@@ -47,6 +47,7 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20200518</version>
+            <type>jar</type>
         </dependency>
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
