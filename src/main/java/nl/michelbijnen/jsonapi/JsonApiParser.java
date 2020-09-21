@@ -131,6 +131,7 @@ class JsonApiParser {
                 relationship.put(relationField.getName(), parsedRelationship);
             }
             if (relationField.isAnnotationPresent(JsonApiLink.class)) {
+                if (relationField.getAnnotation(JsonApiLink.class).relation().equals(""))
                 links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(object, relationField.getName()));
             }
         }
