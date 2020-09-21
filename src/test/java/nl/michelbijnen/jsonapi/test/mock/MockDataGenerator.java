@@ -72,6 +72,8 @@ public class MockDataGenerator {
         // Adding the users to the object dtos
         {
             mainObject.setOwner(owner);
+            mainObject.setOwnerSelfRel("http://localhost:8080/objects/2/relationships/owner");
+            mainObject.setOwnerRelatedRel("http://localhost:8080/objects/2/owner");
         }
     }
 

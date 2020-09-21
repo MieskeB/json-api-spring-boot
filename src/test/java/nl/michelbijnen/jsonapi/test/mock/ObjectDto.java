@@ -13,6 +13,10 @@ public class ObjectDto {
 
     @JsonApiRelation("Owner")
     private UserDto owner;
+    @JsonApiLink(relation = "Owner")
+    private String ownerSelfRel;
+    @JsonApiLink(value = JsonApiLinkType.RELATED, relation = "Owner")
+    private String ownerRelatedRel;
 
     @JsonApiLink(JsonApiLinkType.FIRST)
     private String firstRel;
@@ -87,5 +91,21 @@ public class ObjectDto {
 
     public void setLastRel(String lastRel) {
         this.lastRel = lastRel;
+    }
+
+    public String getOwnerSelfRel() {
+        return ownerSelfRel;
+    }
+
+    public void setOwnerSelfRel(String ownerSelfRel) {
+        this.ownerSelfRel = ownerSelfRel;
+    }
+
+    public String getOwnerRelatedRel() {
+        return ownerRelatedRel;
+    }
+
+    public void setOwnerRelatedRel(String ownerRelatedRel) {
+        this.ownerRelatedRel = ownerRelatedRel;
     }
 }
