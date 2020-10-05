@@ -13,6 +13,12 @@
     <description>Converter for DTOs to json:api</description>
     <url>https://www.michelbijnen.nl/</url>
 
+    <properties>
+        <java.version>11</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
     <licenses>
         <license>
             <name>MIT License</name>
