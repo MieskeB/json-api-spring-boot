@@ -6,7 +6,7 @@
 
     <groupId>nl.michelbijnen.jsonapi</groupId>
     <artifactId>json-api</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
     <packaging>jar</packaging>
 
     <name>nl.michelbijnen.jsonapi:json-api-converter</name>
