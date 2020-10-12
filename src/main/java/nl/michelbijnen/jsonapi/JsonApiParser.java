@@ -2,6 +2,7 @@ package nl.michelbijnen.jsonapi;
 
 import nl.michelbijnen.jsonapi.annotation.*;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
@@ -75,7 +76,7 @@ class JsonApiParser {
 
         // Check if it is a list
         if (Collection.class.isAssignableFrom(field.getType())) {
-            List<JSONObject> dataForEach = new ArrayList<>();
+            JSONArray dataForEach = new JSONArray();
             for (Object relationObject : (Collection<Object>) new GetterAndSetter().callGetter(object, field.getName())) {
 
                 JSONObject dataObjectForEach = new JSONObject();
@@ -86,7 +87,7 @@ class JsonApiParser {
                         break;
                     }
                 }
-                dataForEach.add(dataObjectForEach);
+                dataForEach.put(dataObjectForEach);
             }
             relationship.put("data", dataForEach);
         }
