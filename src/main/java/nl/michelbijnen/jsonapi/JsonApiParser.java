@@ -6,9 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 class JsonApiParser {
     static JSONObject parseToLinks(Object object) throws Exception {
@@ -27,7 +25,7 @@ class JsonApiParser {
         JSONObject data = new JSONObject();
         JSONObject relationships = new JSONObject();
         JSONObject attributes = new JSONObject();
-        List<JSONObject> included = new ArrayList<>();
+        JSONArray included = new JSONArray();
 
         data.put("type", object.getClass().getAnnotation(JsonApiObject.class).value());
         for (Field field : object.getClass().getDeclaredFields()) {
@@ -45,10 +43,10 @@ class JsonApiParser {
                 Object relationObject = new GetterAndSetter().callGetter(object, field.getName());
                 if (Collection.class.isAssignableFrom(relationObject.getClass())) {
                     for (Object loopRelationObject : (Collection<Object>) relationObject) {
-                        included.add(parseInclude(loopRelationObject));
+                        included.put(parseInclude(loopRelationObject));
                     }
                 } else {
-                    included.add(parseInclude(relationObject));
+                    included.put(parseInclude(relationObject));
                 }
             }
         }
@@ -133,7 +131,7 @@ class JsonApiParser {
             }
             if (relationField.isAnnotationPresent(JsonApiLink.class)) {
                 if (relationField.getAnnotation(JsonApiLink.class).relation().equals(""))
-                links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(object, relationField.getName()));
+                    links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(object, relationField.getName()));
             }
         }
 
