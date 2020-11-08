@@ -4,6 +4,7 @@ import nl.michelbijnen.jsonapi.JsonApiConverter;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
 import nl.michelbijnen.jsonapi.test.mock.UserDto;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +57,6 @@ public class UserTest {
     public void testIfEmptyArrayWillWork() throws Exception {
         JsonApiConverter converter = new JsonApiConverter(new ArrayList());
         String result = converter.convert();
-        System.out.println(result);
-        assertEquals("data: []", result);
+        assertEquals("{\"data\":[]}", result);
     }
 }

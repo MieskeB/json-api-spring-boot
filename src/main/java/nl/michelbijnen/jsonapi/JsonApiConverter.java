@@ -15,7 +15,10 @@ public class JsonApiConverter {
     public String convert() throws Exception {
         JSONObject finalJsonObject = new JSONObject();
         if (Collection.class.isAssignableFrom(this.object.getClass())) {
-            finalJsonObject.put("links", JsonApiParser.parseToLinks(((Collection<Object>) this.object).iterator().next()));
+            if (((Collection<Object>) this.object).size() != 0) {
+                final Object linksObject = ((Collection<Object>) this.object).iterator().next();
+                finalJsonObject.put("links", JsonApiParser.parseToLinks(linksObject));
+            }
 
             JSONArray data = new JSONArray();
             for (Object loopObject : (Collection<Object>) this.object) {
