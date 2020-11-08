@@ -51,4 +51,12 @@ public class UserTest {
         JSONObject jsonObject = new JSONObject(converter.convert());
         assertEquals("User", jsonObject.getJSONObject("data").getString("type"));
     }
+
+    @Test
+    public void testIfEmptyArrayWillWork() throws Exception {
+        JsonApiConverter converter = new JsonApiConverter(new ArrayList());
+        String result = converter.convert();
+        System.out.println(result);
+        assertEquals("data: []", result);
+    }
 }
