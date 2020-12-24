@@ -10,7 +10,7 @@ For maven, add the following dependency to your dependencies:
 <dependency>
   <groupId>nl.michelbijnen.jsonapi</groupId>
   <artifactId>json-api</artifactId>
-  <version>1.1.1</version>
+  <version>1.2.8</version>
 </dependency>
 ```
 
