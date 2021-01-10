@@ -17,10 +17,10 @@ public class LinkTest {
     private UserDto userDto;
 
     @Before
-    public void before() {
+    public void before() throws CloneNotSupportedException {
         MockDataGenerator generator = MockDataGenerator.getInstance();
-        this.objectDto = generator.getObjectDto();
-        this.userDto = generator.getUserDto();
+        this.objectDto = (ObjectDto) generator.getObjectDto().clone();
+        this.userDto = (UserDto) generator.getUserDto().clone();
     }
 
     @Test

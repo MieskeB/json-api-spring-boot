@@ -1,6 +1,7 @@
 package nl.michelbijnen.jsonapi;
 
 import nl.michelbijnen.jsonapi.annotation.*;
+import nl.michelbijnen.jsonapi.exception.JsonApiException;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,7 +28,11 @@ class JsonApiParser {
         JSONObject attributes = new JSONObject();
         JSONArray included = new JSONArray();
 
-        data.put("type", object.getClass().getAnnotation(JsonApiObject.class).value());
+        if (object.getClass().getAnnotation(JsonApiObject.class) != null) {
+            data.put("type", object.getClass().getAnnotation(JsonApiObject.class).value());
+        } else {
+            throw new JsonApiException("@JsonApiObject(\"<classname>\") missing");
+        }
         for (Field field : object.getClass().getDeclaredFields()) {
             // Add the id
             if (field.isAnnotationPresent(JsonApiId.class)) {
@@ -41,12 +46,14 @@ class JsonApiParser {
             else if (field.isAnnotationPresent(JsonApiRelation.class)) {
                 relationships.put(field.getAnnotation(JsonApiRelation.class).value(), parseRelationship(object, field));
                 Object relationObject = new GetterAndSetter().callGetter(object, field.getName());
-                if (Collection.class.isAssignableFrom(relationObject.getClass())) {
-                    for (Object loopRelationObject : (Collection<Object>) relationObject) {
-                        included.put(parseInclude(loopRelationObject));
+                if (relationObject != null) {
+                    if (Collection.class.isAssignableFrom(relationObject.getClass())) {
+                        for (Object loopRelationObject : (Collection<Object>) relationObject) {
+                            included.put(parseInclude(loopRelationObject));
+                        }
+                    } else {
+                        included.put(parseInclude(relationObject));
                     }
-                } else {
-                    included.put(parseInclude(relationObject));
                 }
             }
         }
@@ -94,11 +101,13 @@ class JsonApiParser {
             Object relationObject = new GetterAndSetter().callGetter(object, field.getName());
 
             JSONObject data = new JSONObject();
-            data.put("type", relationObject.getClass().getAnnotation(JsonApiObject.class).value());
-            for (Field relationField : relationObject.getClass().getDeclaredFields()) {
-                if (relationField.isAnnotationPresent(JsonApiId.class)) {
-                    data.put("id", new GetterAndSetter().callGetter(relationObject, relationField.getName()));
-                    break;
+            if (relationObject != null) {
+                data.put("type", relationObject.getClass().getAnnotation(JsonApiObject.class).value());
+                for (Field relationField : relationObject.getClass().getDeclaredFields()) {
+                    if (relationField.isAnnotationPresent(JsonApiId.class)) {
+                        data.put("id", new GetterAndSetter().callGetter(relationObject, relationField.getName()));
+                        break;
+                    }
                 }
             }
             relationship.put("data", data);

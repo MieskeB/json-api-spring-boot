@@ -19,11 +19,11 @@ public class ListTest {
     private List<ObjectDto> objectDtos;
 
     @Before
-    public void before() {
+    public void before() throws CloneNotSupportedException {
         MockDataGenerator generator = MockDataGenerator.getInstance();
         this.objectDtos = new ArrayList<>();
-        this.objectDtos.add(generator.getObjectDto());
-        this.objectDtos.add(generator.getObjectDto());
+        this.objectDtos.add((ObjectDto) generator.getObjectDto().clone());
+        this.objectDtos.add((ObjectDto) generator.getObjectDto().clone());
     }
 
     @Test

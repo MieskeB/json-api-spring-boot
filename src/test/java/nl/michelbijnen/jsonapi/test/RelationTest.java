@@ -8,19 +8,20 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class RelationTest {
+
+    private MockDataGenerator generator;
 
     private ObjectDto objectDto;
     private UserDto userDto;
 
     @Before
-    public void before() {
-        MockDataGenerator generator = MockDataGenerator.getInstance();
-        this.objectDto = generator.getObjectDto();
-        this.userDto = generator.getUserDto();
+    public void before() throws CloneNotSupportedException {
+        this.generator = MockDataGenerator.getInstance();
+        this.objectDto = (ObjectDto) generator.getObjectDto().clone();
+        this.userDto = (UserDto) generator.getUserDto().clone();
     }
 
     @Test
@@ -28,6 +29,15 @@ public class RelationTest {
         JsonApiConverter converter = new JsonApiConverter(objectDto);
         JSONObject jsonObject = new JSONObject(converter.convert());
         assertNotNull(jsonObject.getJSONObject("data").getJSONObject("relationships"));
+    }
+
+    @Test
+    public void testIfRelationshipCanBeNull() throws Exception {
+        objectDto.setOwner(null);
+        JsonApiConverter converter = new JsonApiConverter(objectDto);
+        JSONObject jsonObject = new JSONObject(converter.convert());
+        assertEquals("{}", jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("data").toString());
+        objectDto = this.generator.getObjectDto();
     }
 
     @Test
@@ -48,7 +58,6 @@ public class RelationTest {
     public void testIfRelationshipOwnerDataIdWorks() throws Exception {
         JsonApiConverter converter = new JsonApiConverter(objectDto);
         JSONObject jsonObject = new JSONObject(converter.convert());
-        System.out.println(jsonObject);
         assertEquals(objectDto.getOwner().getId(), jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("data").getString("id"));
     }
 

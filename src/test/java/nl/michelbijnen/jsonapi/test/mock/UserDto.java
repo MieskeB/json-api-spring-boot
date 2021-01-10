@@ -6,7 +6,7 @@ import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
 import java.util.List;
 
 @JsonApiObject("User")
-public class UserDto {
+public class UserDto implements Cloneable {
     @JsonApiId
     private String id;
 
@@ -120,5 +120,10 @@ public class UserDto {
 
     public void setChildObjectRelatedRel(String childObjectRelatedRel) {
         this.childObjectRelatedRel = childObjectRelatedRel;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

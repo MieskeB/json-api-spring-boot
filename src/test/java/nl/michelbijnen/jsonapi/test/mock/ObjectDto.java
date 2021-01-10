@@ -4,7 +4,7 @@ import nl.michelbijnen.jsonapi.annotation.*;
 import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
 
 @JsonApiObject("Object")
-public class ObjectDto {
+public class ObjectDto implements Cloneable {
     @JsonApiId
     private String id;
 
@@ -107,5 +107,10 @@ public class ObjectDto {
 
     public void setOwnerRelatedRel(String ownerRelatedRel) {
         this.ownerRelatedRel = ownerRelatedRel;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

@@ -20,9 +20,9 @@ public class UserTest {
     private UserDto userDto;
 
     @Before
-    public void before() {
+    public void before() throws CloneNotSupportedException {
         MockDataGenerator generator = MockDataGenerator.getInstance();
-        this.userDto = generator.getUserDto();
+        this.userDto = (UserDto) generator.getUserDto().clone();
     }
 
     @Test
