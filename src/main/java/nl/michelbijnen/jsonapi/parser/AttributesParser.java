@@ -1,2 +1,4 @@
-package nl.michelbijnen.jsonapi.parser;public class AttributesParser {
+package nl.michelbijnen.jsonapi.parser;
+
+class AttributesParser {
 }

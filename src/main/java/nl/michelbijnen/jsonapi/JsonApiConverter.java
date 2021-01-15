@@ -1,6 +1,6 @@
 package nl.michelbijnen.jsonapi;
 
-import nl.michelbijnen.jsonapi.parser.JsonApiParser;
+import nl.michelbijnen.jsonapi.parser.DataParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -12,22 +12,22 @@ public class JsonApiConverter {
     }
 
     public static String convert(Object object) throws Exception {
-        JsonApiParser jsonApiParser = new JsonApiParser();
+        DataParser dataParser = new DataParser();
         JSONObject finalJsonObject = new JSONObject();
         if (Collection.class.isAssignableFrom(object.getClass())) {
             if (((Collection<Object>) object).size() != 0) {
                 final Object linksObject = ((Collection<Object>) object).iterator().next();
-                finalJsonObject.put("links", jsonApiParser.parseToLinks(linksObject));
+                finalJsonObject.put("links", dataParser.parseToLinks(linksObject));
             }
 
             JSONArray data = new JSONArray();
             for (Object loopObject : (Collection<Object>) object) {
-                data.put(JsonApiParser.parseToData(loopObject));
+                data.put(DataParser.parseToData(loopObject));
             }
             finalJsonObject.put("data", data);
         } else {
-            finalJsonObject.put("links", JsonApiParser.parseToLinks(object));
-            finalJsonObject.put("data", JsonApiParser.parseToData(object));
+            finalJsonObject.put("links", DataParser.parseToLinks(object));
+            finalJsonObject.put("data", DataParser.parseToData(object));
         }
         return finalJsonObject.toString();
     }
