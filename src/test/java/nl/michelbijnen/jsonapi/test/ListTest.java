@@ -28,30 +28,26 @@ public class ListTest {
 
     @Test
     public void testIfLinksExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.objectDtos);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
         assertNotNull(jsonObject.getJSONObject("links"));
     }
 
     @Test
     public void testIfDataExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.objectDtos);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
         assertNotNull(jsonObject.getJSONArray("data"));
     }
 
     @Test
     public void testIfDataContainsId() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.objectDtos);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
         assertEquals(objectDtos.get(0).getId(), jsonObject.getJSONArray("data").getJSONObject(0).getString("id"));
         assertEquals(objectDtos.get(1).getId(), jsonObject.getJSONArray("data").getJSONObject(1).getString("id"));
     }
 
     @Test
     public void testIfDataContainsType() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.objectDtos);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
         assertEquals("Object", jsonObject.getJSONArray("data").getJSONObject(0).getString("type"));
         assertEquals("Object", jsonObject.getJSONArray("data").getJSONObject(1).getString("type"));
     }

@@ -26,66 +26,57 @@ public class RelationTest {
 
     @Test
     public void testIfRelationshipExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data").getJSONObject("relationships"));
     }
 
     @Test
     public void testIfRelationshipCanBeNull() throws Exception {
         objectDto.setOwner(null);
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("{}", jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("data").toString());
         objectDto = this.generator.getObjectDto();
     }
 
     @Test
     public void testIfRelationshipOwnerExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner"));
     }
 
     @Test
     public void testIfRelationshipOwnerDataExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("data"));
     }
 
     @Test
     public void testIfRelationshipOwnerDataIdWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals(objectDto.getOwner().getId(), jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("data").getString("id"));
     }
 
     @Test
     public void testIfRelationshipOwnerDataTypeWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("User", jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("data").getString("type"));
     }
 
     @Test
     public void testIfRelationshipOwnerLinksExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("links"));
     }
 
     @Test
     public void testIfRelationshipOwnerLinksSelfWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals(objectDto.getOwnerSelfRel(), jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("links").getString("self"));
     }
 
     @Test
     public void testIfRelationshipOwnerLinksRelatedWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals(objectDto.getOwnerRelatedRel(), jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("links").getString("related"));
     }
 }

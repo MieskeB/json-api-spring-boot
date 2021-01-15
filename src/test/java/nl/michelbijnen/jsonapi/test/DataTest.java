@@ -25,36 +25,31 @@ public class DataTest {
 
     @Test
     public void testIfDataExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data"));
     }
 
     @Test
     public void testIfIdWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals(objectDto.getId(), jsonObject.getJSONObject("data").getString("id"));
     }
 
     @Test
     public void testIfTypeWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("Object", jsonObject.getJSONObject("data").getString("type"));
     }
 
     @Test
     public void testIfAttributesExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data").getJSONObject("attributes"));
     }
 
     @Test
     public void testIfAttributeNameWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals(objectDto.getName(), jsonObject.getJSONObject("data").getJSONObject("attributes").getString("name"));
     }
 }

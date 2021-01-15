@@ -27,36 +27,31 @@ public class UserTest {
 
     @Test
     public void testIfLinksExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.userDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
         assertNotNull(jsonObject.getJSONObject("links"));
     }
 
     @Test
     public void testIfDataExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.userDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
         assertNotNull(jsonObject.getJSONObject("data"));
     }
 
     @Test
     public void testIfDataContainsId() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.userDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
         assertEquals(userDto.getId(), jsonObject.getJSONObject("data").getString("id"));
     }
 
     @Test
     public void testIfDataContainsType() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.userDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
         assertEquals("User", jsonObject.getJSONObject("data").getString("type"));
     }
 
     @Test
     public void testIfEmptyArrayWillWork() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(new ArrayList());
-        String result = converter.convert();
+        String result = JsonApiConverter.convert(userDto);
         assertEquals("{\"data\":[]}", result);
     }
 }
