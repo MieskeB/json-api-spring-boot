@@ -130,8 +130,7 @@ Now to convert the object to a string, you can do that the following way with a 
 ```java
     import nl.michelbijnen.jsonapi.JsonApiConverter;
 
-    JsonApiConverter jsonApiConverter = new JsonApiConverter(user);
-    System.out.println(jsonApiConverter.convert());
+    String result = JsonApiConverter.convert(user);
 ```
 
 # Conclusion
