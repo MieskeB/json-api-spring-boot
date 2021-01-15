@@ -65,7 +65,6 @@ public class RelationTest {
     public void testIfRelationshipOwnerDataTypeWorks() throws Exception {
         JsonApiConverter converter = new JsonApiConverter(objectDto);
         JSONObject jsonObject = new JSONObject(converter.convert());
-        System.out.println(jsonObject);
         assertEquals("User", jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("data").getString("type"));
     }
 
