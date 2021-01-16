@@ -127,10 +127,11 @@ private String boxRelatedRel;
 
 ## Creating the string
 Now to convert the object to a string, you can do that the following way with a full user object.
-```java
-    import nl.michelbijnen.jsonapi.JsonApiConverter;
 
-    String result = JsonApiConverter.convert(user);
+```java
+
+
+String result=JsonApiConverter.convert(user);
 ```
 
 # Conclusion

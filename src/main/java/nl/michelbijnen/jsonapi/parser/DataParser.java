@@ -13,14 +13,8 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 
 public class DataParser {
-    private Object object;
 
-    public JSONObject parse(Object object) {
-        this.object = object;
-        return this.parseToData();
-    }
-
-    private JSONObject parseToData() {
+    private JSONObject parseToData(Object object) {
         JSONObject data = new JSONObject();
         JSONObject relationships = new JSONObject();
         JSONObject attributes = new JSONObject();
@@ -34,16 +28,16 @@ public class DataParser {
         for (Field field : object.getClass().getDeclaredFields()) {
             // Add the id
             if (field.isAnnotationPresent(JsonApiId.class)) {
-                data.put("id", new GetterAndSetter().callGetter(object, field.getName()));
+                data.put("id", GetterAndSetter.callGetter(object, field.getName()));
             }
             // Add the properties
             else if (field.isAnnotationPresent(JsonApiProperty.class)) {
-                attributes.put(field.getName(), new GetterAndSetter().callGetter(object, field.getName()));
+                attributes.put(field.getName(), GetterAndSetter.callGetter(object, field.getName()));
             }
             // Add the relations
             else if (field.isAnnotationPresent(JsonApiRelation.class)) {
                 relationships.put(field.getAnnotation(JsonApiRelation.class).value(), parseRelationship(object, field));
-                Object relationObject = new GetterAndSetter().callGetter(object, field.getName());
+                Object relationObject = GetterAndSetter.callGetter(object, field.getName());
                 if (relationObject != null) {
                     if (Collection.class.isAssignableFrom(relationObject.getClass())) {
                         for (Object loopRelationObject : (Collection<Object>) relationObject) {
