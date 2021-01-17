@@ -24,31 +24,32 @@ public class DataTest {
     }
 
     @Test
-    public void testIfDataExists() throws Exception {
+    public void testIfDataExists() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data"));
     }
 
     @Test
-    public void testIfIdWorks() throws Exception {
+    public void testIfIdWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        System.out.println(jsonObject.toString());
         assertEquals(objectDto.getId(), jsonObject.getJSONObject("data").getString("id"));
     }
 
     @Test
-    public void testIfTypeWorks() throws Exception {
+    public void testIfTypeWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("Object", jsonObject.getJSONObject("data").getString("type"));
     }
 
     @Test
-    public void testIfAttributesExists() throws Exception {
+    public void testIfAttributesExists() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data").getJSONObject("attributes"));
     }
 
     @Test
-    public void testIfAttributeNameWorks() throws Exception {
+    public void testIfAttributeNameWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals(objectDto.getName(), jsonObject.getJSONObject("data").getJSONObject("attributes").getString("name"));
     }

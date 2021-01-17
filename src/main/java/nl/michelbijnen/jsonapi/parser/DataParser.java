@@ -3,19 +3,12 @@ package nl.michelbijnen.jsonapi.parser;
 import nl.michelbijnen.jsonapi.annotation.JsonApiId;
 import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
 import nl.michelbijnen.jsonapi.exception.JsonApiException;
+import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 
 class DataParser {
-
-    private AttributesParser attributesParser;
-    private RelationshipParser relationshipParser;
-
-    DataParser() {
-        this.attributesParser = new AttributesParser();
-        this.relationshipParser = new RelationshipParser();
-    }
 
     /**
      * This method should return a jsonobject with the following properties:
@@ -43,8 +36,11 @@ class DataParser {
             return data;
         }
 
-        data.put("attributes", this.attributesParser.parse(object));
-        data.put("relationships", this.relationshipParser.parse(object));
+        AttributesParser attributesParser = new AttributesParser();
+        data.put("attributes", attributesParser.parse(object));
+
+        RelationshipParser relationshipParser = new RelationshipParser();
+        data.put("relationships", relationshipParser.parse(object));
 
         return data;
     }
@@ -59,7 +55,7 @@ class DataParser {
     private String getId(Object object) {
         for (Field field : object.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(JsonApiId.class)) {
-                return field.getName();
+                return GetterAndSetter.callGetter(object, field.getName()).toString();
             }
         }
         throw new JsonApiException("No field with @JsonApiId is found");

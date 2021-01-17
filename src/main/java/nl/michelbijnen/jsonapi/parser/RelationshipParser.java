@@ -37,6 +37,10 @@ class RelationshipParser {
 
                 Object relationObject = GetterAndSetter.callGetter(object, field.getName());
 
+                if (relationObject == null) {
+                    return new JSONObject();
+                }
+
                 if (this.isList(relationObject)) {
                     jsonObject.put(field.getAnnotation(JsonApiRelation.class).value(), this.parseRelationshipAsList(object, field));
                 } else {
