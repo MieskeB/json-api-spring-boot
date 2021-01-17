@@ -32,7 +32,6 @@ public class DataTest {
     @Test
     public void testIfIdWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        System.out.println(jsonObject.toString());
         assertEquals(objectDto.getId(), jsonObject.getJSONObject("data").getString("id"));
     }
 

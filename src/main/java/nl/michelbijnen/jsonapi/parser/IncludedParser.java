@@ -6,39 +6,40 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 
 class IncludedParser {
+    private DataParser dataParser;
+
+    IncludedParser() {
+        this.dataParser = new DataParser();
+    }
 
     JSONArray parse(Object object) {
-        JSONObject include = new JSONObject();
-        JSONObject attributes = new JSONObject();
-        JSONObject links = new JSONObject();
-        JSONObject relationship = new JSONObject();
-
-        include.put("type", object.getClass().getAnnotation(JsonApiObject.class).value());
+        JSONArray include = new JSONArray();
 
         for (Field relationField : object.getClass().getDeclaredFields()) {
-            if (relationField.isAnnotationPresent(JsonApiId.class)) {
-                include.put("id", new GetterAndSetter().callGetter(object, relationField.getName()));
-            }
-            if (relationField.isAnnotationPresent(JsonApiProperty.class)) {
-                attributes.put(relationField.getName(), new GetterAndSetter().callGetter(object, relationField.getName()));
-            }
             if (relationField.isAnnotationPresent(JsonApiRelation.class)) {
-//                JSONObject parsedRelationship = parseRelationship(object, relationField);
-//                parsedRelationship.remove("links");
-//                relationship.put(relationField.getName(), parsedRelationship);
-            }
-            if (relationField.isAnnotationPresent(JsonApiLink.class)) {
-                if (relationField.getAnnotation(JsonApiLink.class).relation().equals(""))
-                    links.put(relationField.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), new GetterAndSetter().callGetter(object, relationField.getName()));
+                Object relationObject = GetterAndSetter.callGetter(object, relationField.getName());
+
+                if (relationObject == null) {
+                    continue;
+                }
+
+                if (this.isList(relationObject)) {
+                    for (Object relationObjectSingle : (Collection<Object>) relationObject) {
+                        include.put(this.dataParser.parse(relationObjectSingle));
+                    }
+                } else {
+                    include.put(this.dataParser.parse(object));
+                }
             }
         }
 
-        include.put("relationships", relationship);
-        include.put("attributes", attributes);
-        include.put("links", links);
-        return new JSONArray();
-//        return include;
+        return include;
+    }
+
+    private boolean isList(Object object) {
+        return Collection.class.isAssignableFrom(object.getClass());
     }
 }
