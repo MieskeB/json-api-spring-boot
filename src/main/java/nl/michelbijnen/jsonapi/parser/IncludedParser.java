@@ -25,9 +25,9 @@ class IncludedParser {
                 attributes.put(relationField.getName(), new GetterAndSetter().callGetter(object, relationField.getName()));
             }
             if (relationField.isAnnotationPresent(JsonApiRelation.class)) {
-                JSONObject parsedRelationship = parseRelationship(object, relationField);
-                parsedRelationship.remove("links");
-                relationship.put(relationField.getName(), parsedRelationship);
+//                JSONObject parsedRelationship = parseRelationship(object, relationField);
+//                parsedRelationship.remove("links");
+//                relationship.put(relationField.getName(), parsedRelationship);
             }
             if (relationField.isAnnotationPresent(JsonApiLink.class)) {
                 if (relationField.getAnnotation(JsonApiLink.class).relation().equals(""))
@@ -38,6 +38,7 @@ class IncludedParser {
         include.put("relationships", relationship);
         include.put("attributes", attributes);
         include.put("links", links);
-        return include;
+        return new JSONArray();
+//        return include;
     }
 }
