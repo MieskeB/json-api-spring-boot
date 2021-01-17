@@ -32,6 +32,7 @@ public class IncludedTest {
     @Test
     public void testIfIncludedIdWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        System.out.println(jsonObject);
         assertEquals(objectDto.getOwner().getId(), jsonObject.getJSONArray("included").getJSONObject(0).getString("id"));
     }
 

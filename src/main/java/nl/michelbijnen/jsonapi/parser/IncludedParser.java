@@ -10,9 +10,11 @@ import java.util.Collection;
 
 class IncludedParser {
     private DataParser dataParser;
+    private LinksParser linksParser;
 
     IncludedParser() {
         this.dataParser = new DataParser();
+        this.linksParser = new LinksParser();
     }
 
     JSONArray parse(Object object) {
@@ -28,10 +30,14 @@ class IncludedParser {
 
                 if (this.isList(relationObject)) {
                     for (Object relationObjectSingle : (Collection<Object>) relationObject) {
-                        include.put(this.dataParser.parse(relationObjectSingle));
+                        JSONObject singleIncludeObject = this.dataParser.parse(relationObjectSingle);
+                        singleIncludeObject.put("links", this.linksParser.parse(relationObjectSingle));
+                        include.put(singleIncludeObject);
                     }
                 } else {
-                    include.put(this.dataParser.parse(object));
+                    JSONObject singleIncludeObject = this.dataParser.parse(relationObject);
+                    singleIncludeObject.put("links", this.linksParser.parse(relationObject));
+                    include.put(singleIncludeObject);
                 }
             }
         }
