@@ -6,7 +6,16 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
 
-public class JsonApiParser {
+class JsonApiParser {
+    private LinksParser linksParser;
+    private DataParser dataParser;
+    private IncludedParser includedParser;
+
+    JsonApiParser() {
+        this.linksParser = new LinksParser();
+        this.dataParser = new DataParser();
+        this.includedParser = new IncludedParser();
+    }
 
     /**
      * This method should combine three things:
@@ -18,7 +27,7 @@ public class JsonApiParser {
      * @return The converted json
      */
     JSONObject parse(Object object) {
-        if (isList(object)) {
+        if (this.isList(object)) {
             return this.convertObjectAsList(object);
         } else {
             return this.convertObjectAsObject(object);
@@ -34,43 +43,31 @@ public class JsonApiParser {
         }
 
         final Object linksObject = ((Collection<Object>) object).iterator().next();
-        jsonObject.put("links", this.links(linksObject));
+        jsonObject.put("links", this.linksParser.parse(linksObject));
 
         JSONArray dataJsonArray = new JSONArray();
         for (Object loopObject : (Collection<Object>) object) {
-            dataJsonArray.put(this.data(loopObject));
+            dataJsonArray.put(this.dataParser.parse(loopObject));
         }
         jsonObject.put("data", dataJsonArray);
 
         JSONArray includedJsonArray = new JSONArray();
         for (Object loopObject : (Collection<Object>) object) {
-            for (Object includedObject : this.included(loopObject)) {
+            for (Object includedObject : this.includedParser.parse(loopObject)) {
                 includedJsonArray.put(includedObject);
             }
         }
-        jsonObject.put("included", this.included(object));
+        jsonObject.put("included", includedJsonArray);
 
         return jsonObject;
     }
 
     private JSONObject convertObjectAsObject(Object object) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("data", this.data(object));
-        jsonObject.put("links", this.links(object));
-        jsonObject.put("included", this.included(object));
+        jsonObject.put("data", this.dataParser.parse(object));
+        jsonObject.put("links", this.linksParser.parse(object));
+        jsonObject.put("included", this.includedParser.parse(object));
         return jsonObject;
-    }
-
-    private JSONObject data(Object object) {
-        throw new NotImplementedException();
-    }
-
-    private JSONObject links(Object object) {
-        throw new NotImplementedException();
-    }
-
-    private JSONArray included(Object object) {
-        throw new NotImplementedException();
     }
 
     private boolean isList(Object object) {

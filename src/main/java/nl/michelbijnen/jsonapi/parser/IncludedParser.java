@@ -2,12 +2,14 @@ package nl.michelbijnen.jsonapi.parser;
 
 import nl.michelbijnen.jsonapi.annotation.*;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 
-public class IncludedParser {
-    JSONObject parseInclude(Object object) throws Exception {
+class IncludedParser {
+
+    JSONArray parse(Object object) {
         JSONObject include = new JSONObject();
         JSONObject attributes = new JSONObject();
         JSONObject links = new JSONObject();

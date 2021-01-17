@@ -2,58 +2,66 @@ package nl.michelbijnen.jsonapi.parser;
 
 import nl.michelbijnen.jsonapi.annotation.JsonApiId;
 import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
-import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
-import nl.michelbijnen.jsonapi.annotation.JsonApiRelation;
 import nl.michelbijnen.jsonapi.exception.JsonApiException;
-import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 
-public class DataParser {
+class DataParser {
 
-    private JSONObject parseToData(Object object) {
+    private AttributesParser attributesParser;
+    private RelationshipParser relationshipParser;
+
+    DataParser() {
+        this.attributesParser = new AttributesParser();
+        this.relationshipParser = new RelationshipParser();
+    }
+
+    /**
+     * This method should return a jsonobject with the following properties:
+     * type
+     * id
+     * attributes
+     * relationships
+     * <p>
+     * As a relation, this should only return type and id
+     *
+     * @param object The object to be converted to data
+     * @return a json object with the object's data
+     */
+    JSONObject parse(Object object) {
+        return this.parse(object, false);
+    }
+
+    JSONObject parse(Object object, boolean asRelation) {
         JSONObject data = new JSONObject();
-        JSONObject relationships = new JSONObject();
-        JSONObject attributes = new JSONObject();
-        JSONArray included = new JSONArray();
 
-        if (object.getClass().getAnnotation(JsonApiObject.class) != null) {
-            data.put("type", object.getClass().getAnnotation(JsonApiObject.class).value());
-        } else {
-            throw new JsonApiException("@JsonApiObject(\"<classname>\") missing");
-        }
-        for (Field field : object.getClass().getDeclaredFields()) {
-            // Add the id
-            if (field.isAnnotationPresent(JsonApiId.class)) {
-                data.put("id", GetterAndSetter.callGetter(object, field.getName()));
-            }
-            // Add the properties
-            else if (field.isAnnotationPresent(JsonApiProperty.class)) {
-                attributes.put(field.getName(), GetterAndSetter.callGetter(object, field.getName()));
-            }
-            // Add the relations
-            else if (field.isAnnotationPresent(JsonApiRelation.class)) {
-                relationships.put(field.getAnnotation(JsonApiRelation.class).value(), parseRelationship(object, field));
-                Object relationObject = GetterAndSetter.callGetter(object, field.getName());
-                if (relationObject != null) {
-                    if (Collection.class.isAssignableFrom(relationObject.getClass())) {
-                        for (Object loopRelationObject : (Collection<Object>) relationObject) {
-                            included.put(parseInclude(loopRelationObject));
-                        }
-                    } else {
-                        included.put(parseInclude(relationObject));
-                    }
-                }
-            }
+        data.put("type", this.getType(object));
+        data.put("id", this.getId(object));
+
+        if (asRelation) {
+            return data;
         }
 
-        data.put("attributes", attributes);
-        data.put("relationships", relationships);
-        data.put("included", included);
+        data.put("attributes", this.attributesParser.parse(object));
+        data.put("relationships", this.relationshipParser.parse(object));
 
         return data;
+    }
+
+    private String getType(Object object) {
+        if (object.getClass().getAnnotation(JsonApiObject.class) != null) {
+            return object.getClass().getAnnotation(JsonApiObject.class).value();
+        }
+        throw new JsonApiException("@JsonApiObject(\"<classname>\") missing");
+    }
+
+    private String getId(Object object) {
+        for (Field field : object.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(JsonApiId.class)) {
+                return field.getName();
+            }
+        }
+        throw new JsonApiException("No field with @JsonApiId is found");
     }
 }
