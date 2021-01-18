@@ -10,13 +10,13 @@ For maven, add the following dependency to your dependencies:
 <dependency>
   <groupId>nl.michelbijnen.jsonapi</groupId>
   <artifactId>json-api</artifactId>
-  <version>1.2.9</version>
+  <version>1.3.0</version>
 </dependency>
 ```
 
 Do the same if you are using gradle:
 ```
-implementation 'nl.michelbijnen.jsonapi:json-api:1.2.9'
+implementation 'nl.michelbijnen.jsonapi:json-api:1.3.0'
 ```
 
 (Don't forget to (re)import all your dependencies afterwards)
