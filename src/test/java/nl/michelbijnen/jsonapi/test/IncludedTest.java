@@ -1,6 +1,6 @@
 package nl.michelbijnen.jsonapi.test;
 
-import nl.michelbijnen.jsonapi.JsonApiConverter;
+import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
 import nl.michelbijnen.jsonapi.test.mock.UserDto;
@@ -24,47 +24,41 @@ public class IncludedTest {
     }
 
     @Test
-    public void testIfIncludedExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertNotNull(jsonObject.getJSONObject("data").getJSONArray("included"));
+    public void testIfIncludedExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertNotNull(jsonObject.getJSONArray("included"));
     }
 
     @Test
-    public void testIfIncludedIdWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getOwner().getId(), jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getString("id"));
+    public void testIfIncludedIdWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertEquals(objectDto.getOwner().getId(), jsonObject.getJSONArray("included").getJSONObject(0).getString("id"));
     }
 
     @Test
-    public void testIfIncludedTypeWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals("User", jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getString("type"));
+    public void testIfIncludedTypeWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertEquals("User", jsonObject.getJSONArray("included").getJSONObject(0).getString("type"));
     }
 
     //region attributes
 
     @Test
-    public void testIfIncludedAttributesExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertNotNull(jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("attributes"));
+    public void testIfIncludedAttributesExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertNotNull(jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("attributes"));
     }
 
     @Test
-    public void testIfIncludedAttributesUsernameWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getOwner().getUsername(), jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("attributes").getString("username"));
+    public void testIfIncludedAttributesUsernameWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertEquals(objectDto.getOwner().getUsername(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("attributes").getString("username"));
     }
 
     @Test
-    public void testIfIncludedAttributesEmailWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getOwner().getEmail(), jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("attributes").getString("email"));
+    public void testIfIncludedAttributesEmailWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertEquals(objectDto.getOwner().getEmail(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("attributes").getString("email"));
     }
 
     //endregion
@@ -72,24 +66,21 @@ public class IncludedTest {
     //region links
 
     @Test
-    public void testIfIncludedLinksExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertNotNull(jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("links"));
+    public void testIfIncludedLinksExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertNotNull(jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links"));
     }
 
     @Test
-    public void testIfIncludedLinksSelfWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getOwner().getSelfRel(), jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("self"));
+    public void testIfIncludedLinksSelfWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertEquals(objectDto.getOwner().getSelfRel(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("self"));
     }
 
     @Test
-    public void testIfIncludedLinksNextWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getOwner().getNextRel(), jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("next"));
+    public void testIfIncludedLinksNextWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertEquals(objectDto.getOwner().getNextRel(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("next"));
     }
 
     //endregion
@@ -97,40 +88,35 @@ public class IncludedTest {
     //region relationships
 
     @Test
-    public void testIfIncludedRelationshipsExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertNotNull(jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("relationships"));
+    public void testIfIncludedRelationshipsExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertNotNull(jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships"));
     }
 
     //region mainObject
 
     @Test
-    public void testIfIncludedRelationshipsMainObjectExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertNotNull(jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("mainObject"));
+    public void testIfIncludedRelationshipsMainObjectExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertNotNull(jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("mainObject"));
     }
 
     @Test
-    public void testIfIncludedRelationshipsMainObjectDataExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertNotNull(jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("mainObject").getJSONObject("data"));
+    public void testIfIncludedRelationshipsMainObjectDataExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertNotNull(jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("mainObject").getJSONObject("data"));
     }
 
     @Test
-    public void testIfIncludedRelationshipsMainObjectDataIdWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals(objectDto.getOwner().getMainObject().getId(), jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("mainObject").getJSONObject("data").getString("id"));
+    public void testIfIncludedRelationshipsMainObjectDataIdWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertEquals(objectDto.getOwner().getMainObject().getId(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("mainObject").getJSONObject("data").getString("id"));
     }
 
     @Test
-    public void testIfIncludedRelationshipsMainObjectDataTypeWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertEquals("Object", jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("mainObject").getJSONObject("data").getString("type"));
+    public void testIfIncludedRelationshipsMainObjectDataTypeWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertEquals("Object", jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("mainObject").getJSONObject("data").getString("type"));
     }
 
     //endregion
@@ -138,24 +124,21 @@ public class IncludedTest {
     //region childObjects
 
     @Test
-    public void testIfIncludedRelationshipsChildObjectsExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertNotNull(jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("childObjects"));
+    public void testIfIncludedRelationshipsChildObjectsExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertNotNull(jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("childObjects"));
     }
 
     @Test
-    public void testIfIncludedRelationshipsChildObjectsDataExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        assertNotNull(jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("childObjects").getJSONArray("data"));
+    public void testIfIncludedRelationshipsChildObjectsDataExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        assertNotNull(jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("childObjects").getJSONArray("data"));
     }
 
     @Test
-    public void testIfIncludedRelationshipsChildObjectsDataIdWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        JSONArray childObjects = jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("childObjects").getJSONArray("data");
+    public void testIfIncludedRelationshipsChildObjectsDataIdWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        JSONArray childObjects = jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("childObjects").getJSONArray("data");
         {
             boolean found = false;
             for (int i = 0; i < childObjects.length(); i++) {
@@ -179,10 +162,9 @@ public class IncludedTest {
     }
 
     @Test
-    public void testIfIncludedRelationshipsChildObjectsDataTypeWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
-        JSONArray childObjects = jsonObject.getJSONObject("data").getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("childObjects").getJSONArray("data");
+    public void testIfIncludedRelationshipsChildObjectsDataTypeWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
+        JSONArray childObjects = jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("childObjects").getJSONArray("data");
         for (int i = 0; i < childObjects.length(); i++) {
             assertEquals("Object", childObjects.getJSONObject(i).getString("type"));
         }

@@ -10,13 +10,13 @@ For maven, add the following dependency to your dependencies:
 <dependency>
   <groupId>nl.michelbijnen.jsonapi</groupId>
   <artifactId>json-api</artifactId>
-  <version>1.2.9</version>
+  <version>1.3.0</version>
 </dependency>
 ```
 
 Do the same if you are using gradle:
 ```
-implementation 'nl.michelbijnen.jsonapi:json-api:1.2.9'
+implementation 'nl.michelbijnen.jsonapi:json-api:1.3.0'
 ```
 
 (Don't forget to (re)import all your dependencies afterwards)
@@ -127,11 +127,11 @@ private String boxRelatedRel;
 
 ## Creating the string
 Now to convert the object to a string, you can do that the following way with a full user object.
-```java
-    import nl.michelbijnen.jsonapi.JsonApiConverter;
 
-    JsonApiConverter jsonApiConverter = new JsonApiConverter(user);
-    System.out.println(jsonApiConverter.convert());
+```java
+
+
+String result=JsonApiConverter.convert(user);
 ```
 
 # Conclusion

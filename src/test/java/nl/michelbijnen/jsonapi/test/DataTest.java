@@ -1,6 +1,6 @@
 package nl.michelbijnen.jsonapi.test;
 
-import nl.michelbijnen.jsonapi.JsonApiConverter;
+import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
 import nl.michelbijnen.jsonapi.test.mock.UserDto;
@@ -24,37 +24,32 @@ public class DataTest {
     }
 
     @Test
-    public void testIfDataExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+    public void testIfDataExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data"));
     }
 
     @Test
-    public void testIfIdWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+    public void testIfIdWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals(objectDto.getId(), jsonObject.getJSONObject("data").getString("id"));
     }
 
     @Test
-    public void testIfTypeWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+    public void testIfTypeWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("Object", jsonObject.getJSONObject("data").getString("type"));
     }
 
     @Test
-    public void testIfAttributesExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+    public void testIfAttributesExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data").getJSONObject("attributes"));
     }
 
     @Test
-    public void testIfAttributeNameWorks() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(objectDto);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+    public void testIfAttributeNameWorks() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals(objectDto.getName(), jsonObject.getJSONObject("data").getJSONObject("attributes").getString("name"));
     }
 }

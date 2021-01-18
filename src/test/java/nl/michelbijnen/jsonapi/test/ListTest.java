@@ -1,9 +1,8 @@
 package nl.michelbijnen.jsonapi.test;
 
-import nl.michelbijnen.jsonapi.JsonApiConverter;
+import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
-import nl.michelbijnen.jsonapi.test.mock.UserDto;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,31 +26,27 @@ public class ListTest {
     }
 
     @Test
-    public void testIfLinksExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.objectDtos);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+    public void testIfLinksExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
         assertNotNull(jsonObject.getJSONObject("links"));
     }
 
     @Test
-    public void testIfDataExists() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.objectDtos);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+    public void testIfDataExists() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
         assertNotNull(jsonObject.getJSONArray("data"));
     }
 
     @Test
-    public void testIfDataContainsId() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.objectDtos);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+    public void testIfDataContainsId() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
         assertEquals(objectDtos.get(0).getId(), jsonObject.getJSONArray("data").getJSONObject(0).getString("id"));
         assertEquals(objectDtos.get(1).getId(), jsonObject.getJSONArray("data").getJSONObject(1).getString("id"));
     }
 
     @Test
-    public void testIfDataContainsType() throws Exception {
-        JsonApiConverter converter = new JsonApiConverter(this.objectDtos);
-        JSONObject jsonObject = new JSONObject(converter.convert());
+    public void testIfDataContainsType() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
         assertEquals("Object", jsonObject.getJSONArray("data").getJSONObject(0).getString("type"));
         assertEquals("Object", jsonObject.getJSONArray("data").getJSONObject(1).getString("type"));
     }
