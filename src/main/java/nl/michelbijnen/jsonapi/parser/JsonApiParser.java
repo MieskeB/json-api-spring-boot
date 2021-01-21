@@ -2,7 +2,6 @@ package nl.michelbijnen.jsonapi.parser;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
 
