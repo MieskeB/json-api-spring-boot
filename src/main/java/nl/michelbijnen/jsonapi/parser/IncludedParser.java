@@ -37,10 +37,10 @@ class IncludedParser {
                 continue;
             }
 
-            boolean rootElementExists = this.rootElementExists(includeRoot, childRelationObject);
+            boolean childElementExistsInRoot = this.rootElementExists(includeRoot, object);
 
-            if (rootElementExists) {
-                return includeRoot;
+            if (childElementExistsInRoot) {
+                continue;
             }
 
             this.addRelationWithChildrenToIncludeRoot(includeRoot, maxDepth, currentDepth, childRelationObject);
@@ -50,8 +50,8 @@ class IncludedParser {
     }
 
     private void addRelationWithChildrenToIncludeRoot(JSONArray includeRoot, int maxDepth, int currentDepth, Object relationObject) {
-        this.addRelationObjectToIncludeRoot(includeRoot, maxDepth, currentDepth, relationObject);
         int newDepth = maxDepth != 0 ? currentDepth + 1 : 0;
+        this.addRelationObjectToIncludeRoot(includeRoot, maxDepth, newDepth, relationObject);
         this.parse(relationObject, includeRoot, maxDepth, newDepth);
     }
 
@@ -97,7 +97,7 @@ class IncludedParser {
         return false;
     }
 
-    private boolean isList(Object object) {
+    private boolean isList(Object object)    {
         return Collection.class.isAssignableFrom(object.getClass());
     }
 }
