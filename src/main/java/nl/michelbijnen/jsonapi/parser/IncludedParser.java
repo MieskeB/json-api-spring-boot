@@ -22,12 +22,16 @@ class IncludedParser {
         return this.parse(object, new JSONArray(), maxDepth, 0);
     }
 
-    JSONArray parse(Object object, JSONArray includeRoot, int maxDepth, int currentDepth) {
-        if (currentDepth > maxDepth && maxDepth != 0) {
-            return includeRoot;
+    JSONArray parse(Object object, JSONArray includeArray, int maxDepth, int currentDepth) {
+        if (currentDepth == maxDepth) {
+            return includeArray;
         }
 
         for (Field relationField : object.getClass().getDeclaredFields()) {
+            if (relationField.isAnnotationPresent(JsonApiId.class)) {
+                System.out.println(GetterAndSetter.callGetter(object, relationField.getName()));
+            }
+
             if (!relationField.isAnnotationPresent(JsonApiRelation.class)) {
                 continue;
             }
@@ -37,59 +41,50 @@ class IncludedParser {
                 continue;
             }
 
-            boolean childElementExistsInRoot = this.rootElementExists(includeRoot, object);
-
-            if (childElementExistsInRoot) {
+            if (this.rootElementExists(includeArray, childRelationObject)) {
                 continue;
             }
 
-            this.addRelationWithChildrenToIncludeRoot(includeRoot, maxDepth, currentDepth, childRelationObject);
+            this.addObjectToIncludeArray(includeArray, childRelationObject);
+
+            this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
         }
 
-        return includeRoot;
+        return includeArray;
     }
 
-    private void addRelationWithChildrenToIncludeRoot(JSONArray includeRoot, int maxDepth, int currentDepth, Object relationObject) {
-        int newDepth = maxDepth != 0 ? currentDepth + 1 : 0;
-        this.addRelationObjectToIncludeRoot(includeRoot, maxDepth, newDepth, relationObject);
-        this.parse(relationObject, includeRoot, maxDepth, newDepth);
-    }
-
-    private void addRelationObjectToIncludeRoot(JSONArray includeRoot, int maxDepth, int currentDepth, Object relationObject) {
+    private void addObjectToIncludeArray(JSONArray includeArray, Object relationObject) {
         if (this.isList(relationObject)) {
             for (Object relationObjectSingle : (Collection<Object>) relationObject) {
                 JSONObject singleIncludeObject = this.dataParser.parse(relationObjectSingle);
                 singleIncludeObject.put("links", this.linksParser.parse(relationObjectSingle));
-                includeRoot.put(singleIncludeObject);
-                int newDepth = maxDepth != 0 ? currentDepth + 1 : 0;
-                this.parse(relationObjectSingle, includeRoot, maxDepth, newDepth);
+                includeArray.put(singleIncludeObject);
             }
         } else {
             JSONObject singleIncludeObject = this.dataParser.parse(relationObject);
             singleIncludeObject.put("links", this.linksParser.parse(relationObject));
-            includeRoot.put(singleIncludeObject);
+            includeArray.put(singleIncludeObject);
         }
     }
 
-    private boolean rootElementExists(JSONArray includeRoot, Object relationObject) {
+    private boolean rootElementExists(JSONArray includeArray, Object relationObject) {
         for (Field insideRelationField : relationObject.getClass().getDeclaredFields()) {
             if (!insideRelationField.isAnnotationPresent(JsonApiId.class)) {
                 continue;
             }
 
             String id = String.valueOf(GetterAndSetter.callGetter(relationObject, insideRelationField.getName()));
-            boolean rootElementExists = idInRoot(includeRoot, id);
 
-            if (rootElementExists) {
+            if (idInIncludedArray(includeArray, id)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean idInRoot(JSONArray includeRoot, String id) {
-        for (int i = 0; i < includeRoot.length(); i++) {
-            JSONObject rootObjectInclude = includeRoot.getJSONObject(i);
+    private boolean idInIncludedArray(JSONArray includeArray, String id) {
+        for (int i = 0; i < includeArray.length(); i++) {
+            JSONObject rootObjectInclude = includeArray.getJSONObject(i);
             if (rootObjectInclude.getString("id").equals(id)) {
                 return true;
             }
