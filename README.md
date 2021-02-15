@@ -15,14 +15,14 @@ For maven, add the following dependency to your dependencies:
 <dependency>
     <groupId>nl.michelbijnen.jsonapi</groupId>
     <artifactId>json-api</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
 </dependency>
 ```
 
 Do the same if you are using gradle:
 
 ```
-implementation 'nl.michelbijnen.jsonapi:json-api:1.3.0'
+implementation 'nl.michelbijnen.jsonapi:json-api:1.4.0'
 ```
 
 (Don't forget to (re)import all your dependencies afterwards)
@@ -174,6 +174,7 @@ String result=JsonApiConverter.convert(user);
 ```
 
 ## Adding depth to the included
+(Added version 1.4.0)
 
 Default, there is a depth of 1. This means that the included will go 1 relation deep. So only the direct relations of
 the base object. If you want to have the relations of the relations, you can change this to 2 or higher for more depth.
