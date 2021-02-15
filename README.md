@@ -136,7 +136,7 @@ private Box boxOwner;
 
 This box object should also have the `@JsonApiObject("box")` annotation, and it should also contain an id.
 
-More to more relations are supported and won't cause any recursions.
+Many to many relations are supported and won't cause any recursions.
 
 ### Adding links
 
