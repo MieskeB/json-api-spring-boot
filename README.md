@@ -141,7 +141,7 @@ Many to many relations are supported and won't cause any recursions.
 ### Adding links
 
 Links can be completely customized. According to JSON:API, the possible link types are: first, previous, self, next and
-last. By default, `@JsonApiLinks` is self. You can customize this by changing the value parameter.
+last. By default, `@JsonApiLink` is self. You can customize this by changing the value parameter.
 
 ```java
 @JsonApiLink
@@ -168,9 +168,9 @@ private String boxRelatedRel;
 Now to convert the object to a string, you can do that the following way with a full user object.
 
 ```java
+import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 
-
-String result=JsonApiConverter.convert(user);
+String result = JsonApiConverter.convert(user);
 ```
 
 ## Adding depth to the included
@@ -182,7 +182,7 @@ the base object. If you want to have the relations of the relations, you can cha
 ```java
 import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 
-String result=JsonApiConverter.convert(user,2);
+String result = JsonApiConverter.convert(user, 2);
 ```
 
 if you want to change the default value, you can set an environment variable (or put this in your server.properties):
