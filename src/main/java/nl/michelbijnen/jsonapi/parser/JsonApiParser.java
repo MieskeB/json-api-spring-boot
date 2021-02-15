@@ -23,17 +23,18 @@ class JsonApiParser {
      * Included
      *
      * @param object the object to be converted
+     * @param maxDepth the depth of the models to return
      * @return The converted json
      */
-    JSONObject parse(Object object) {
+    JSONObject parse(Object object, int maxDepth) {
         if (this.isList(object)) {
-            return this.convertObjectAsList(object);
+            return this.convertObjectAsList(object, maxDepth);
         } else {
-            return this.convertObjectAsObject(object);
+            return this.convertObjectAsObject(object, maxDepth);
         }
     }
 
-    private JSONObject convertObjectAsList(Object object) {
+    private JSONObject convertObjectAsList(Object object, int maxDepth) {
         JSONObject jsonObject = new JSONObject();
 
         if (((Collection<Object>) object).size() == 0) {
@@ -52,7 +53,7 @@ class JsonApiParser {
 
         JSONArray includedJsonArray = new JSONArray();
         for (Object loopObject : (Collection<Object>) object) {
-            for (Object includedObject : this.includedParser.parse(loopObject)) {
+            for (Object includedObject : this.includedParser.parse(loopObject, maxDepth)) {
                 includedJsonArray.put(includedObject);
             }
         }
@@ -61,11 +62,11 @@ class JsonApiParser {
         return jsonObject;
     }
 
-    private JSONObject convertObjectAsObject(Object object) {
+    private JSONObject convertObjectAsObject(Object object, int maxDepth) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", this.dataParser.parse(object));
         jsonObject.put("links", this.linksParser.parse(object));
-        jsonObject.put("included", this.includedParser.parse(object));
+        jsonObject.put("included", this.includedParser.parse(object, maxDepth));
         return jsonObject;
     }
 

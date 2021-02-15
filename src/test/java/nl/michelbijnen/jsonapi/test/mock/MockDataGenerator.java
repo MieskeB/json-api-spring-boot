@@ -9,6 +9,9 @@ public class MockDataGenerator {
     private final ObjectDto childObject1 = new ObjectDto();
     private final ObjectDto childObject2 = new ObjectDto();
 
+    private final AppleDto apple1 = new AppleDto();
+    private final AppleDto apple2 = new AppleDto();
+
     private MockDataGenerator() {
 
         // Defining the user dtos
@@ -49,6 +52,30 @@ public class MockDataGenerator {
             childObject2.setLastRel("http://localhost:8080/objects/5");
         }
 
+        // Defining the apple dtos
+        {
+            apple1.setId("Apple1");
+            apple1.setName("Golden");
+        }
+        {
+            apple2.setId("Apple2");
+            apple2.setName("Iron");
+        }
+
+        // Adding the apples to the objects
+        {
+            mainObject.setApple(apple1);
+            mainObject.setAppleSelfRel("http://localhost:8080/objects/2/relationships/apple");
+        }
+        {
+            childObject1.setApple(apple1);
+            childObject1.setAppleSelfRel("http://localhost:8080/objects/3/relationships/apple");
+        }
+        {
+            childObject2.setApple(apple2);
+            childObject2.setAppleSelfRel("http://localhost:8080/objects/4/relationships/apple");
+        }
+
         // Adding the objects to the user dtos
         {
             // Set the main objects
@@ -87,7 +114,7 @@ public class MockDataGenerator {
         }
     }
 
-    private static MockDataGenerator mockDataGenerator = new MockDataGenerator();
+    private static final MockDataGenerator mockDataGenerator = new MockDataGenerator();
 
     public static MockDataGenerator getInstance() {
         return mockDataGenerator;
@@ -99,5 +126,9 @@ public class MockDataGenerator {
 
     public ObjectDto getObjectDto() {
         return this.mainObject;
+    }
+
+    public AppleDto getAppleDto() {
+        return this.apple1;
     }
 }

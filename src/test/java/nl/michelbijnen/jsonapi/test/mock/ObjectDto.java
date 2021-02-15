@@ -18,6 +18,11 @@ public class ObjectDto implements Cloneable {
     @JsonApiLink(value = JsonApiLinkType.RELATED, relation = "Owner")
     private String ownerRelatedRel;
 
+    @JsonApiRelation("Apple")
+    private AppleDto apple;
+    @JsonApiLink(relation = "Apple")
+    private String appleSelfRel;
+
     @JsonApiLink(JsonApiLinkType.FIRST)
     private String firstRel;
     @JsonApiLink(JsonApiLinkType.PREVIOUS)
@@ -112,5 +117,21 @@ public class ObjectDto implements Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    public AppleDto getApple() {
+        return apple;
+    }
+
+    public void setApple(AppleDto apple) {
+        this.apple = apple;
+    }
+
+    public String getAppleSelfRel() {
+        return appleSelfRel;
+    }
+
+    public void setAppleSelfRel(String appleSelfRel) {
+        this.appleSelfRel = appleSelfRel;
     }
 }

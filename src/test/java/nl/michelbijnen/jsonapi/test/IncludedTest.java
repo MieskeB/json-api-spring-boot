@@ -1,6 +1,7 @@
 package nl.michelbijnen.jsonapi.test;
 
 import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
+import nl.michelbijnen.jsonapi.test.mock.AppleDto;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
 import nl.michelbijnen.jsonapi.test.mock.UserDto;
@@ -15,12 +16,14 @@ public class IncludedTest {
 
     private ObjectDto objectDto;
     private UserDto userDto;
+    private AppleDto appleDto;
 
     @Before
     public void before() throws CloneNotSupportedException {
         MockDataGenerator generator = MockDataGenerator.getInstance();
         this.objectDto = (ObjectDto) generator.getObjectDto().clone();
         this.userDto = (UserDto) generator.getUserDto().clone();
+        this.appleDto = (AppleDto) generator.getAppleDto().clone();
     }
 
     @Test
@@ -167,6 +170,37 @@ public class IncludedTest {
         JSONArray childObjects = jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("relationships").getJSONObject("childObjects").getJSONArray("data");
         for (int i = 0; i < childObjects.length(); i++) {
             assertEquals("Object", childObjects.getJSONObject(i).getString("type"));
+        }
+    }
+
+    //endregion
+
+    //region depth
+
+    @Test
+    public void testIfDepthIsWorking() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto, 2));
+        System.out.println(jsonObject.toString());
+        JSONArray includedObjects = jsonObject.getJSONArray("included");
+        for (int i = 0; i < includedObjects.length(); i++) {
+            JSONObject included = includedObjects.getJSONObject(i);
+            if (included.getString("id").equals(this.appleDto.getId())) {
+                return;
+            }
+        }
+        fail();
+    }
+
+    @Test
+    public void testIfDepthIsCapping() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto, 1));
+        System.out.println(jsonObject.toString());
+        JSONArray includedObjects = jsonObject.getJSONArray("included");
+        for (int i = 0; i < includedObjects.length(); i++) {
+            JSONObject included = includedObjects.getJSONObject(i);
+            if (included.getString("id").equals(this.appleDto.getId())) {
+                fail();
+            }
         }
     }
 

@@ -33,6 +33,7 @@ We know this library has conflicts with spring-boot-starter-test. This is due to
 android-json. This can be solved by changing the dependency to the following:
 
 ```xml
+
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-test</artifactId>
@@ -170,6 +171,23 @@ Now to convert the object to a string, you can do that the following way with a 
 
 
 String result=JsonApiConverter.convert(user);
+```
+
+## Adding depth to the included
+
+Default, there is a depth of 1. This means that the included will go 1 relation deep. So only the direct relations of
+the base object. If you want to have the relations of the relations, you can change this to 2 or higher for more depth.
+
+```java
+import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
+
+String result=JsonApiConverter.convert(user,2);
+```
+
+if you want to change the default value, you can set an environment variable (or put this in your server.properties):
+
+```
+jsonapi.depth=2
 ```
 
 # Conclusion
