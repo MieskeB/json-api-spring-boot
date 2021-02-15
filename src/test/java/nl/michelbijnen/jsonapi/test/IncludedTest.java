@@ -180,7 +180,6 @@ public class IncludedTest {
     @Test
     public void testIfDepthIsWorking() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto, 2));
-        System.out.println(jsonObject.toString());
         JSONArray includedObjects = jsonObject.getJSONArray("included");
         for (int i = 0; i < includedObjects.length(); i++) {
             JSONObject included = includedObjects.getJSONObject(i);
@@ -194,7 +193,6 @@ public class IncludedTest {
     @Test
     public void testIfDepthIsCapping() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto, 1));
-        System.out.println(jsonObject.toString());
         JSONArray includedObjects = jsonObject.getJSONArray("included");
         for (int i = 0; i < includedObjects.length(); i++) {
             JSONObject included = includedObjects.getJSONObject(i);

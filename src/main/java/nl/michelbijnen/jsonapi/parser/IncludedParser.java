@@ -28,10 +28,6 @@ class IncludedParser {
         }
 
         for (Field relationField : object.getClass().getDeclaredFields()) {
-            if (relationField.isAnnotationPresent(JsonApiId.class)) {
-                System.out.println(GetterAndSetter.callGetter(object, relationField.getName()));
-            }
-
             if (!relationField.isAnnotationPresent(JsonApiRelation.class)) {
                 continue;
             }
