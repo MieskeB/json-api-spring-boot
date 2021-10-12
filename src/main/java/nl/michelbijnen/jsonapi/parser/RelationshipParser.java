@@ -38,7 +38,7 @@ class RelationshipParser {
                 Object relationObject = GetterAndSetter.callGetter(object, field.getName());
 
                 if (relationObject == null) {
-                    return new JSONObject();
+                    continue;
                 }
 
                 if (this.isList(relationObject)) {
