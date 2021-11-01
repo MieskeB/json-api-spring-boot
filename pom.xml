@@ -11,7 +11,7 @@
 
     <name>nl.michelbijnen.jsonapi:json-api-converter</name>
     <description>Converter for DTOs to json:api</description>
-    <url>https://www.michelbijnen.nl/</url>
+    <url>https://github.com/MieskeB/json-api-spring-boot</url>
 
     <properties>
         <java.version>11</java.version>
@@ -28,10 +28,15 @@
 
     <developers>
         <developer>
+            <id>mbijnen</id>
             <name>Michel Bijnen</name>
-            <email>michelbijnenmichelbijnen@gmail.com</email>
-            <organization>MichelBijnen</organization>
-            <organizationUrl>https://www.michelbijnen.nl/</organizationUrl>
+            <email>info@michelbijnen.nl</email>
+            <url>https://www.michelbijnen.nl/</url>
+        </developer>
+        <developer>
+            <id>sdeboer</id>
+            <name>Sander de Boer</name>
+            <email>info@sanderdeboer.me</email>
         </developer>
     </developers>
 
