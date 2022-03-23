@@ -27,6 +27,21 @@ class IncludedParser {
             return includeArray;
         }
 
+        if (!(object instanceof Iterable)) {
+            parseObject(object, includeArray, maxDepth, currentDepth);
+
+            return includeArray;
+        }
+
+        Iterable<Object> collection = (Iterable<Object>) object;
+        for (Object item : collection) {
+            parseObject(item, includeArray, maxDepth, currentDepth);
+        }
+        return includeArray;
+
+    }
+
+    private void parseObject(Object object, JSONArray includeArray, int maxDepth, int currentDepth) {
         for (Field relationField : object.getClass().getDeclaredFields()) {
             if (!relationField.isAnnotationPresent(JsonApiRelation.class)) {
                 continue;
@@ -45,8 +60,6 @@ class IncludedParser {
 
             this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
         }
-
-        return includeArray;
     }
 
     private void addObjectToIncludeArray(JSONArray includeArray, Object relationObject) {
