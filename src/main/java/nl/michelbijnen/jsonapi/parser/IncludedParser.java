@@ -1,6 +1,7 @@
 package nl.michelbijnen.jsonapi.parser;
 
 import nl.michelbijnen.jsonapi.annotation.JsonApiId;
+import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
 import nl.michelbijnen.jsonapi.annotation.JsonApiRelation;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 import org.json.JSONArray;
@@ -83,18 +84,19 @@ class IncludedParser {
             }
 
             String id = String.valueOf(GetterAndSetter.callGetter(relationObject, insideRelationField.getName()));
+            String type = relationObject.getClass().getAnnotation(JsonApiObject.class).value();
 
-            if (idInIncludedArray(includeArray, id)) {
+            if (idInIncludedArray(includeArray, id, type)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean idInIncludedArray(JSONArray includeArray, String id) {
+    private boolean idInIncludedArray(JSONArray includeArray, String id, String type) {
         for (int i = 0; i < includeArray.length(); i++) {
             JSONObject rootObjectInclude = includeArray.getJSONObject(i);
-            if (rootObjectInclude.getString("id").equals(id)) {
+            if (rootObjectInclude.getString("id").equals(id) && rootObjectInclude.getString("type").equals(type)) {
                 return true;
             }
         }
