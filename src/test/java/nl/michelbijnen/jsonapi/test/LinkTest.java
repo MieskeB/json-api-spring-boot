@@ -6,6 +6,7 @@ import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
 import nl.michelbijnen.jsonapi.test.mock.UserDto;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -30,32 +31,36 @@ public class LinkTest {
     }
 
     @Test
+    @Ignore("Planned for update 1.5.1")
     public void testIfFirstRelWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getFirstRel(), jsonObject.getJSONObject("links").getString("first"));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=0", jsonObject.getJSONObject("links").getString("first"));
     }
 
     @Test
+    @Ignore("Planned for update 1.5.1")
     public void testIfPreviousRelWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getPreviousRel(), jsonObject.getJSONObject("links").getString("previous"));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=0", jsonObject.getJSONObject("links").getString("previous"));
     }
 
     @Test
     public void testIfSelfRelWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getSelfRel(), jsonObject.getJSONObject("links").getString("self"));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId(), jsonObject.getJSONObject("links").getString("self"));
     }
 
     @Test
+    @Ignore("Planned for update 1.5.1")
     public void testIfNextRelWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getNextRel(), jsonObject.getJSONObject("links").getString("next"));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=2", jsonObject.getJSONObject("links").getString("next"));
     }
 
     @Test
+    @Ignore("Planned for update 1.5.1")
     public void testIfLastRelWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getLastRel(), jsonObject.getJSONObject("links").getString("last"));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=2", jsonObject.getJSONObject("links").getString("last"));
     }
 }

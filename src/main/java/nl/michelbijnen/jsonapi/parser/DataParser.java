@@ -7,6 +7,8 @@ import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 class DataParser {
 
@@ -53,7 +55,8 @@ class DataParser {
     }
 
     private String getId(Object object) {
-        for (Field field : object.getClass().getDeclaredFields()) {
+        Field[] allFields = Stream.concat(Arrays.stream(object.getClass().getDeclaredFields()), Arrays.stream(object.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
+        for (Field field : allFields) {
             if (field.isAnnotationPresent(JsonApiId.class)) {
                 return GetterAndSetter.callGetter(object, field.getName()).toString();
             }

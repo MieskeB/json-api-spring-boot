@@ -56,7 +56,7 @@ class RelationshipParser {
 
         Object relationObject = GetterAndSetter.callGetter(object, field.getName());
 
-        relationship.put("links", this.linksParser.parse(object, field.getAnnotation(JsonApiRelation.class).value()));
+        relationship.put("links", this.linksParser.parse(relationObject));
         relationship.put("data", this.dataParser.parse(relationObject, true));
 
         return relationship;
@@ -67,7 +67,7 @@ class RelationshipParser {
 
         Collection<Object> relationObjectCollection = (Collection<Object>) GetterAndSetter.callGetter(object, field.getName());
 
-        relationship.put("links", this.linksParser.parse(object, field.getAnnotation(JsonApiRelation.class).value()));
+        relationship.put("links", this.linksParser.parse(relationObjectCollection, true));
 
         JSONArray dataForEach = new JSONArray();
         for (Object relationObject : relationObjectCollection) {

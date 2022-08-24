@@ -5,7 +5,7 @@ import nl.michelbijnen.jsonapi.annotation.JsonApiLink;
 import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
 import nl.michelbijnen.jsonapi.exception.JsonApiException;
 
-public abstract class JsonApiLinkGeneratorSpringBoot {
+public abstract class JsonApiDtoExtendable {
     @JsonApiId
     private String id;
 
@@ -28,15 +28,14 @@ public abstract class JsonApiLinkGeneratorSpringBoot {
     @JsonApiLink(JsonApiLinkType.RELATED)
     private String relatedRel;
 
-
     /**
      * Generates the links
      *
      * @param self the URI of the self endpoint (ex: "/user") (id should not be included since it is automatically gotten from the override)
      * @param all  the URI of the all endpoint (ex: "/")
      */
-    protected void generate(String self, String all) {
-        if (this.id.isEmpty()) {
+    public void generate(String self, String all) {
+        if (this.id == null || this.id.isEmpty()) {
             throw new JsonApiException("Id not entered");
         }
 
@@ -97,8 +96,40 @@ public abstract class JsonApiLinkGeneratorSpringBoot {
         return id;
     }
 
-    protected void setId(String id) {
+    public void setId(String id) {
         this.id = id;
+    }
+
+    public String getAllSelfRel() {
+        return allSelfRel;
+    }
+
+    public void setSelfRel(String selfRel) {
+        this.selfRel = selfRel;
+    }
+
+    public void setAllSelfRel(String allSelfRel) {
+        this.allSelfRel = allSelfRel;
+    }
+
+    public void setFirstRel(String firstRel) {
+        this.firstRel = firstRel;
+    }
+
+    public void setLastRel(String lastRel) {
+        this.lastRel = lastRel;
+    }
+
+    public void setNextRel(String nextRel) {
+        this.nextRel = nextRel;
+    }
+
+    public void setPreviousRel(String previousRel) {
+        this.previousRel = previousRel;
+    }
+
+    public void setRelatedRel(String relatedRel) {
+        this.relatedRel = relatedRel;
     }
 
     //endregion

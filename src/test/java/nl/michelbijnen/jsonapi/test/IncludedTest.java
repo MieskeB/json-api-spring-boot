@@ -8,6 +8,7 @@ import nl.michelbijnen.jsonapi.test.mock.UserDto;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -77,13 +78,14 @@ public class IncludedTest {
     @Test
     public void testIfIncludedLinksSelfWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getOwner().getSelfRel(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("self"));
+        assertEquals("http://localhost:8080/user/" + this.userDto.getId(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("self"));
     }
 
     @Test
+    @Ignore("Planned for update 1.5.1")
     public void testIfIncludedLinksNextWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getOwner().getNextRel(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("next"));
+        assertEquals("http://localhost:8080/user/" + this.userDto.getId() + "?page=2", jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("next"));
     }
 
     //endregion

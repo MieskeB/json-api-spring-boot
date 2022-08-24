@@ -32,6 +32,12 @@ public class ListTest {
     }
 
     @Test
+    public void testIfSelfRelIsCreatedProperly() {
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
+        assertEquals("http://localhost:8080/object", jsonObject.getJSONObject("links").getString("self"));
+    }
+
+    @Test
     public void testIfDataExists() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
         assertNotNull(jsonObject.getJSONArray("data"));
