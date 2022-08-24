@@ -28,6 +28,7 @@ public class ListTest {
     @Test
     public void testIfLinksExists() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDtos));
+        System.out.println(jsonObject);
         assertNotNull(jsonObject.getJSONObject("links"));
     }
 

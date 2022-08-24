@@ -39,7 +39,7 @@ public abstract class JsonApiDtoExtendable {
             throw new JsonApiException("Id not entered");
         }
 
-        String baseUrl = System.getProperty("baseUrl", "http://localhost:8080");
+        String baseUrl = System.getProperty("jsonapi.baseUrl", "http://localhost:8080");
 
         // check if trailing / baseUrl
         if (baseUrl.endsWith("/")) {
