@@ -42,8 +42,7 @@ class JsonApiParser {
             return jsonObject;
         }
 
-        final Object linksObject = ((Collection<Object>) object).iterator().next();
-        jsonObject.put("links", this.linksParser.parse(linksObject, true));
+        jsonObject.put("links", this.linksParser.parse(object));
 
         JSONArray dataJsonArray = new JSONArray();
         for (Object loopObject : (Collection<Object>) object) {

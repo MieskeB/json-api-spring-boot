@@ -67,7 +67,7 @@ class RelationshipParser {
 
         Collection<Object> relationObjectCollection = (Collection<Object>) GetterAndSetter.callGetter(object, field.getName());
 
-        relationship.put("links", this.linksParser.parse(relationObjectCollection, true));
+        relationship.put("links", this.linksParser.parse(relationObjectCollection));
 
         JSONArray dataForEach = new JSONArray();
         for (Object relationObject : relationObjectCollection) {

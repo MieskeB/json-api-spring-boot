@@ -7,15 +7,16 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.stream.Stream;
 
 class LinksParser {
     JSONObject parse(Object object) {
-        return this.parse(object, false);
-    }
-
-    JSONObject parse(Object object, boolean asList) {
         JSONObject links = new JSONObject();
+        boolean asList = this.isList(object);
+        if (asList) {
+            object = ((Collection<Object>) object).iterator().next();
+        }
         Field[] allFields = Stream.concat(Arrays.stream(object.getClass().getDeclaredFields()), Arrays.stream(object.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
         for (Field field : allFields) {
             if (field.isAnnotationPresent(JsonApiLink.class)) {
@@ -35,5 +36,9 @@ class LinksParser {
             }
         }
         return links;
+    }
+
+    private boolean isList(Object object) {
+        return Collection.class.isAssignableFrom(object.getClass());
     }
 }
