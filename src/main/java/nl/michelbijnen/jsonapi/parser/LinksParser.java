@@ -15,6 +15,9 @@ class LinksParser {
         JSONObject links = new JSONObject();
         boolean asList = this.isList(object);
         if (asList) {
+            if (((Collection<Object>)object).size() == 0) {
+                return links;
+            }
             object = ((Collection<Object>) object).iterator().next();
         }
         Field[] allFields = Stream.concat(Arrays.stream(object.getClass().getDeclaredFields()), Arrays.stream(object.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
