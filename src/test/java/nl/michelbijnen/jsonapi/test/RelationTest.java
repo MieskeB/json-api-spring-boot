@@ -77,7 +77,7 @@ public class RelationTest {
     }
 
     @Test
-    @Ignore("Planned for update 1.5.1")
+    @Ignore("Planned for future update")
     public void testIfRelationshipOwnerLinksRelatedWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("http://localhost:8080/object/" + objectDto.getId() + "/user/" + objectDto.getOwner().getId(), jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("Owner").getJSONObject("links").getString("related"));

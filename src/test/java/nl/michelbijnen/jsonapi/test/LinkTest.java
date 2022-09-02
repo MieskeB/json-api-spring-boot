@@ -31,14 +31,14 @@ public class LinkTest {
     }
 
     @Test
-    @Ignore("Planned for update 1.5.1")
+    @Ignore("Planned for future update")
     public void testIfFirstRelWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=0", jsonObject.getJSONObject("links").getString("first"));
     }
 
     @Test
-    @Ignore("Planned for update 1.5.1")
+    @Ignore("Planned for future update")
     public void testIfPreviousRelWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=0", jsonObject.getJSONObject("links").getString("previous"));
@@ -51,14 +51,14 @@ public class LinkTest {
     }
 
     @Test
-    @Ignore("Planned for update 1.5.1")
+    @Ignore("Planned for future update")
     public void testIfNextRelWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=2", jsonObject.getJSONObject("links").getString("next"));
     }
 
     @Test
-    @Ignore("Planned for update 1.5.1")
+    @Ignore("Planned for future update")
     public void testIfLastRelWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=2", jsonObject.getJSONObject("links").getString("last"));

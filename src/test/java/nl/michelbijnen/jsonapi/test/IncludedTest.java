@@ -82,7 +82,7 @@ public class IncludedTest {
     }
 
     @Test
-    @Ignore("Planned for update 1.5.1")
+    @Ignore("Planned for future update")
     public void testIfIncludedLinksNextWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertEquals("http://localhost:8080/user/" + this.userDto.getId() + "?page=2", jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("next"));

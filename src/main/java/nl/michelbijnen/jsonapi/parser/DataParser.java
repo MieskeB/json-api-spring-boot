@@ -41,8 +41,9 @@ class DataParser {
         AttributesParser attributesParser = new AttributesParser();
         data.put("attributes", attributesParser.parse(object));
 
-        RelationshipParser relationshipParser = new RelationshipParser();
-        data.put("relationships", relationshipParser.parse(object));
+        JSONObject parsedRelationships = new RelationshipParser().parse(object);
+        if (!parsedRelationships.isEmpty())
+            data.put("relationships", parsedRelationships);
 
         return data;
     }

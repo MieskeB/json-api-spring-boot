@@ -22,7 +22,7 @@ class JsonApiParser {
      * Links
      * Included
      *
-     * @param object the object to be converted
+     * @param object   the object to be converted
      * @param maxDepth the depth of the models to return
      * @return The converted json
      */
@@ -59,7 +59,8 @@ class JsonApiParser {
                 includedJsonArray.put(includedObject);
             }
         }
-        jsonObject.put("included", includedJsonArray);
+        if (includedJsonArray.length() != 0)
+            jsonObject.put("included", includedJsonArray);
 
         return jsonObject;
     }
@@ -67,8 +68,15 @@ class JsonApiParser {
     private JSONObject convertObjectAsObject(Object object, int maxDepth) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", this.dataParser.parse(object));
-        jsonObject.put("links", this.linksParser.parse(object));
-        jsonObject.put("included", this.includedParser.parse(object, maxDepth));
+
+        JSONObject parsedLinks = this.linksParser.parse(object);
+        if (!parsedLinks.isEmpty())
+            jsonObject.put("links", parsedLinks);
+
+        JSONArray parsedIncluded = this.includedParser.parse(object, maxDepth);
+        if (parsedIncluded.length() != 0)
+            jsonObject.put("included", parsedIncluded);
+
         return jsonObject;
     }
 
