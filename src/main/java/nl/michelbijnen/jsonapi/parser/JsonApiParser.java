@@ -42,7 +42,10 @@ class JsonApiParser {
             return jsonObject;
         }
 
-        jsonObject.put("links", this.linksParser.parse(object));
+        JSONObject parsedLinks = this.linksParser.parse(object);
+        if (!parsedLinks.isEmpty()) {
+            jsonObject.put("links", parsedLinks);
+        }
 
         JSONArray dataJsonArray = new JSONArray();
         for (Object loopObject : (Collection<Object>) object) {
