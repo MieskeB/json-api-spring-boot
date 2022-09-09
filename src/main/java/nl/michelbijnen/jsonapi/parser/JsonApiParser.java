@@ -27,6 +27,11 @@ class JsonApiParser {
      * @return The converted json
      */
     JSONObject parse(Object object, int maxDepth) {
+        if (object == null) {
+            JSONObject nullObject = new JSONObject();
+            nullObject.put("data", new JSONObject());
+            return nullObject;
+        }
         if (this.isList(object)) {
             return this.convertObjectAsList(object, maxDepth);
         } else {
@@ -38,7 +43,7 @@ class JsonApiParser {
         JSONObject jsonObject = new JSONObject();
 
         if (((Collection<Object>) object).size() == 0) {
-            jsonObject.put("data", new JSONObject());
+            jsonObject.put("data", new JSONArray());
             return jsonObject;
         }
 

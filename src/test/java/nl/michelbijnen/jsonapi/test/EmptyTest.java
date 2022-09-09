@@ -5,12 +5,14 @@ import nl.michelbijnen.jsonapi.test.mock.AppleDto;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
 import nl.michelbijnen.jsonapi.test.mock.UserDto;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -26,6 +28,28 @@ public class EmptyTest {
         this.objectDto = (ObjectDto) generator.getObjectDto().clone();
         this.userDto = (UserDto) generator.getUserDto().clone();
         this.appleDto = (AppleDto) generator.getAppleDto().clone();
+    }
+
+    @Test
+    public void testIfEmptyObjectWillReturnEmptyObject() {
+        ObjectDto test = null;
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(test));
+        try {
+            jsonObject.getJSONObject("data");
+        } catch (JSONException e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testIfEmptyListOfObjectsWillReturnEmptyList() {
+        List<ObjectDto> tests = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(tests));
+        try {
+            assertEquals(0, jsonObject.getJSONArray("data").length());
+        } catch (JSONException e) {
+            fail();
+        }
     }
 
     @Test
