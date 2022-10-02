@@ -11,6 +11,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.HashMap;
+
 import static org.junit.Assert.*;
 
 public class IncludedTest {
@@ -205,6 +207,55 @@ public class IncludedTest {
     }
 
     //endregion
+
+    //endregion
+
+    //region double relations inside included
+
+    @Test
+    public void testIfDoubleRelationsAreAddedOnlyOnceToIncludedFromList() {
+        userDto.getChildObjects().add(userDto.getChildObjects().get(0));
+        JSONArray included = new JSONObject(JsonApiConverter.convert(userDto)).getJSONArray("included");
+        for (int i = 0; i < included.length(); i++) {
+            String id = included.getJSONObject(i).getString("id");
+            String type = included.getJSONObject(i).getString("type");
+
+            int c = 0;
+            for (int j = 0; j < included.length(); j++) {
+                String idToTest = included.getJSONObject(j).getString("id");
+                String typeToTest = included.getJSONObject(j).getString("type");
+
+                if (id.equals(idToTest) && type.equals(typeToTest)) {
+                    c++;
+                    if (c >= 2) {
+                        fail("Item id " + idToTest + " of type " + typeToTest + " exist multiple times in included");
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testIfDoubleRelationsAreAddedOnlyOnceToIncluded() {
+        JSONArray included = new JSONObject(JsonApiConverter.convert(userDto, 4)).getJSONArray("included");
+        for (int i = 0; i < included.length(); i++) {
+            String id = included.getJSONObject(i).getString("id");
+            String type = included.getJSONObject(i).getString("type");
+
+            int c = 0;
+            for (int j = 0; j < included.length(); j++) {
+                String idToTest = included.getJSONObject(j).getString("id");
+                String typeToTest = included.getJSONObject(j).getString("type");
+
+                if (id.equals(idToTest) && type.equals(typeToTest)) {
+                    c++;
+                    if (c >= 2) {
+                        fail("Item id " + idToTest + " of type " + typeToTest + " exist multiple times in included");
+                    }
+                }
+            }
+        }
+    }
 
     //endregion
 }

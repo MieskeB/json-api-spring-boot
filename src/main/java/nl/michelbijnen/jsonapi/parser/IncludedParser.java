@@ -8,7 +8,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Stream;
 
 class IncludedParser {
     private DataParser dataParser;
@@ -53,32 +55,41 @@ class IncludedParser {
                 continue;
             }
 
-            if (this.rootElementExists(includeArray, childRelationObject)) {
-                continue;
+            if (this.isList(childRelationObject)) {
+                if (((Collection<Object>) childRelationObject).isEmpty()) {
+                    continue;
+                }
+                for (Object childRelationObjectAsItem : (Collection<Object>) childRelationObject) {
+                    if (this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem)) {
+                        continue;
+                    }
+
+                    this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
+                }
+            } else {
+                if (!this.addObjectToIncludeArray(includeArray, childRelationObject)) {
+                    continue;
+                }
+
+                this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
             }
-
-            this.addObjectToIncludeArray(includeArray, childRelationObject);
-
-            this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
         }
     }
 
-    private void addObjectToIncludeArray(JSONArray includeArray, Object relationObject) {
-        if (this.isList(relationObject)) {
-            for (Object relationObjectSingle : (Collection<Object>) relationObject) {
-                JSONObject singleIncludeObject = this.dataParser.parse(relationObjectSingle);
-                singleIncludeObject.put("links", this.linksParser.parse(relationObjectSingle));
-                includeArray.put(singleIncludeObject);
-            }
-        } else {
-            JSONObject singleIncludeObject = this.dataParser.parse(relationObject);
-            singleIncludeObject.put("links", this.linksParser.parse(relationObject));
-            includeArray.put(singleIncludeObject);
+    private boolean addObjectToIncludeArray(JSONArray includeArray, Object relationObject) {
+        if (this.rootElementExists(includeArray, relationObject)) {
+            return false;
         }
+
+        JSONObject singleIncludeObject = this.dataParser.parse(relationObject);
+        singleIncludeObject.put("links", this.linksParser.parse(relationObject));
+        includeArray.put(singleIncludeObject);
+        return true;
     }
 
     private boolean rootElementExists(JSONArray includeArray, Object relationObject) {
-        for (Field insideRelationField : relationObject.getClass().getDeclaredFields()) {
+        Field[] allFields = Stream.concat(Arrays.stream(relationObject.getClass().getDeclaredFields()), Arrays.stream(relationObject.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
+        for (Field insideRelationField : allFields) {
             if (!insideRelationField.isAnnotationPresent(JsonApiId.class)) {
                 continue;
             }
@@ -103,7 +114,7 @@ class IncludedParser {
         return false;
     }
 
-    private boolean isList(Object object)    {
+    private boolean isList(Object object) {
         return Collection.class.isAssignableFrom(object.getClass());
     }
 }
