@@ -15,14 +15,14 @@ For maven, add the following dependency to your dependencies:
 <dependency>
     <groupId>nl.michelbijnen.jsonapi</groupId>
     <artifactId>json-api</artifactId>
-    <version>1.5.4</version>
+    <version>1.5.5</version>
 </dependency>
 ```
 
 Do the same if you are using gradle:
 
 ```
-implementation 'nl.michelbijnen.jsonapi:json-api:1.5.4'
+implementation 'nl.michelbijnen.jsonapi:json-api:1.5.5'
 ```
 
 (Don't forget to (re)import all your dependencies afterwards)
