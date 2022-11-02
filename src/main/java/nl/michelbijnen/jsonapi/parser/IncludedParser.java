@@ -1,13 +1,16 @@
 package nl.michelbijnen.jsonapi.parser;
 
 import nl.michelbijnen.jsonapi.annotation.JsonApiId;
+import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
 import nl.michelbijnen.jsonapi.annotation.JsonApiRelation;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Stream;
 
 class IncludedParser {
     private DataParser dataParser;
@@ -27,6 +30,21 @@ class IncludedParser {
             return includeArray;
         }
 
+        if (!(object instanceof Iterable)) {
+            parseObject(object, includeArray, maxDepth, currentDepth);
+
+            return includeArray;
+        }
+
+        Iterable<Object> collection = (Iterable<Object>) object;
+        for (Object item : collection) {
+            parseObject(item, includeArray, maxDepth, currentDepth);
+        }
+        return includeArray;
+
+    }
+
+    private void parseObject(Object object, JSONArray includeArray, int maxDepth, int currentDepth) {
         for (Field relationField : object.getClass().getDeclaredFields()) {
             if (!relationField.isAnnotationPresent(JsonApiRelation.class)) {
                 continue;
@@ -37,58 +55,66 @@ class IncludedParser {
                 continue;
             }
 
-            if (this.rootElementExists(includeArray, childRelationObject)) {
-                continue;
+            if (this.isList(childRelationObject)) {
+                if (((Collection<Object>) childRelationObject).isEmpty()) {
+                    continue;
+                }
+                for (Object childRelationObjectAsItem : (Collection<Object>) childRelationObject) {
+                    if (this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem)) {
+                        continue;
+                    }
+
+                    this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
+                }
+            } else {
+                if (!this.addObjectToIncludeArray(includeArray, childRelationObject)) {
+                    continue;
+                }
+
+                this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
             }
-
-            this.addObjectToIncludeArray(includeArray, childRelationObject);
-
-            this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
         }
-
-        return includeArray;
     }
 
-    private void addObjectToIncludeArray(JSONArray includeArray, Object relationObject) {
-        if (this.isList(relationObject)) {
-            for (Object relationObjectSingle : (Collection<Object>) relationObject) {
-                JSONObject singleIncludeObject = this.dataParser.parse(relationObjectSingle);
-                singleIncludeObject.put("links", this.linksParser.parse(relationObjectSingle));
-                includeArray.put(singleIncludeObject);
-            }
-        } else {
-            JSONObject singleIncludeObject = this.dataParser.parse(relationObject);
-            singleIncludeObject.put("links", this.linksParser.parse(relationObject));
-            includeArray.put(singleIncludeObject);
+    private boolean addObjectToIncludeArray(JSONArray includeArray, Object relationObject) {
+        if (this.rootElementExists(includeArray, relationObject)) {
+            return false;
         }
+
+        JSONObject singleIncludeObject = this.dataParser.parse(relationObject);
+        singleIncludeObject.put("links", this.linksParser.parse(relationObject));
+        includeArray.put(singleIncludeObject);
+        return true;
     }
 
     private boolean rootElementExists(JSONArray includeArray, Object relationObject) {
-        for (Field insideRelationField : relationObject.getClass().getDeclaredFields()) {
+        Field[] allFields = Stream.concat(Arrays.stream(relationObject.getClass().getDeclaredFields()), Arrays.stream(relationObject.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
+        for (Field insideRelationField : allFields) {
             if (!insideRelationField.isAnnotationPresent(JsonApiId.class)) {
                 continue;
             }
 
             String id = String.valueOf(GetterAndSetter.callGetter(relationObject, insideRelationField.getName()));
+            String type = relationObject.getClass().getAnnotation(JsonApiObject.class).value();
 
-            if (idInIncludedArray(includeArray, id)) {
+            if (idInIncludedArray(includeArray, id, type)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean idInIncludedArray(JSONArray includeArray, String id) {
+    private boolean idInIncludedArray(JSONArray includeArray, String id, String type) {
         for (int i = 0; i < includeArray.length(); i++) {
             JSONObject rootObjectInclude = includeArray.getJSONObject(i);
-            if (rootObjectInclude.getString("id").equals(id)) {
+            if (rootObjectInclude.getString("id").equals(id) && rootObjectInclude.getString("type").equals(type)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean isList(Object object)    {
+    private boolean isList(Object object) {
         return Collection.class.isAssignableFrom(object.getClass());
     }
 }

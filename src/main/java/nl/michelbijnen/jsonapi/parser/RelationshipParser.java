@@ -22,7 +22,7 @@ class RelationshipParser {
 
     /**
      * This class should add the name of the object and under it the following items:
-     *
+     * <p>
      * links
      * data
      *
@@ -41,11 +41,14 @@ class RelationshipParser {
                     continue;
                 }
 
+                JSONObject relation;
                 if (this.isList(relationObject)) {
-                    jsonObject.put(field.getAnnotation(JsonApiRelation.class).value(), this.parseRelationshipAsList(object, field));
+                    relation = this.parseRelationshipAsList(object, field);
                 } else {
-                    jsonObject.put(field.getAnnotation(JsonApiRelation.class).value(), this.parseRelationshipAsObject(object, field));
+                    relation = this.parseRelationshipAsObject(object, field);
                 }
+                if (!relation.isEmpty())
+                    jsonObject.put(field.getAnnotation(JsonApiRelation.class).value(), relation);
             }
         }
         return jsonObject;
@@ -56,8 +59,13 @@ class RelationshipParser {
 
         Object relationObject = GetterAndSetter.callGetter(object, field.getName());
 
-        relationship.put("links", this.linksParser.parse(object, field.getAnnotation(JsonApiRelation.class).value()));
-        relationship.put("data", this.dataParser.parse(relationObject, true));
+        JSONObject linksParser = this.linksParser.parse(relationObject);
+        if (!linksParser.isEmpty())
+            relationship.put("links", linksParser);
+
+        JSONObject dataParser = this.dataParser.parse(relationObject, true);
+        if (!dataParser.isEmpty())
+            relationship.put("data", dataParser);
 
         return relationship;
     }
@@ -67,13 +75,16 @@ class RelationshipParser {
 
         Collection<Object> relationObjectCollection = (Collection<Object>) GetterAndSetter.callGetter(object, field.getName());
 
-        relationship.put("links", this.linksParser.parse(object, field.getAnnotation(JsonApiRelation.class).value()));
+        JSONObject linksParser = this.linksParser.parse(relationObjectCollection);
+        if (!linksParser.isEmpty())
+            relationship.put("links", linksParser);
 
         JSONArray dataForEach = new JSONArray();
         for (Object relationObject : relationObjectCollection) {
             dataForEach.put(this.dataParser.parse(relationObject, true));
         }
-        relationship.put("data", dataForEach);
+        if (!dataForEach.isEmpty())
+            relationship.put("data", dataForEach);
 
         return relationship;
     }

@@ -8,7 +8,10 @@ import nl.michelbijnen.jsonapi.test.mock.UserDto;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -77,13 +80,14 @@ public class IncludedTest {
     @Test
     public void testIfIncludedLinksSelfWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getOwner().getSelfRel(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("self"));
+        assertEquals("http://localhost:8080/user/" + this.userDto.getId(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("self"));
     }
 
     @Test
+    @Ignore("Planned for future update")
     public void testIfIncludedLinksNextWorks() {
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getOwner().getNextRel(), jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("next"));
+        assertEquals("http://localhost:8080/user/" + this.userDto.getId() + "?page=2", jsonObject.getJSONArray("included").getJSONObject(0).getJSONObject("links").getString("next"));
     }
 
     //endregion
@@ -203,6 +207,55 @@ public class IncludedTest {
     }
 
     //endregion
+
+    //endregion
+
+    //region double relations inside included
+
+    @Test
+    public void testIfDoubleRelationsAreAddedOnlyOnceToIncludedFromList() {
+        userDto.getChildObjects().add(userDto.getChildObjects().get(0));
+        JSONArray included = new JSONObject(JsonApiConverter.convert(userDto)).getJSONArray("included");
+        for (int i = 0; i < included.length(); i++) {
+            String id = included.getJSONObject(i).getString("id");
+            String type = included.getJSONObject(i).getString("type");
+
+            int c = 0;
+            for (int j = 0; j < included.length(); j++) {
+                String idToTest = included.getJSONObject(j).getString("id");
+                String typeToTest = included.getJSONObject(j).getString("type");
+
+                if (id.equals(idToTest) && type.equals(typeToTest)) {
+                    c++;
+                    if (c >= 2) {
+                        fail("Item id " + idToTest + " of type " + typeToTest + " exist multiple times in included");
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testIfDoubleRelationsAreAddedOnlyOnceToIncluded() {
+        JSONArray included = new JSONObject(JsonApiConverter.convert(userDto, 4)).getJSONArray("included");
+        for (int i = 0; i < included.length(); i++) {
+            String id = included.getJSONObject(i).getString("id");
+            String type = included.getJSONObject(i).getString("type");
+
+            int c = 0;
+            for (int j = 0; j < included.length(); j++) {
+                String idToTest = included.getJSONObject(j).getString("id");
+                String typeToTest = included.getJSONObject(j).getString("type");
+
+                if (id.equals(idToTest) && type.equals(typeToTest)) {
+                    c++;
+                    if (c >= 2) {
+                        fail("Item id " + idToTest + " of type " + typeToTest + " exist multiple times in included");
+                    }
+                }
+            }
+        }
+    }
 
     //endregion
 }

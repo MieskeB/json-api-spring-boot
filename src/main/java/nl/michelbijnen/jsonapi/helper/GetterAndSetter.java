@@ -12,7 +12,14 @@ public class GetterAndSetter {
             return pd.getReadMethod().invoke(obj);
         }
         catch (Exception e) {
-            throw new JsonApiException("Getter for field '" + fieldName + "' does not exist");
+            try {
+                PropertyDescriptor pd;
+                pd = new PropertyDescriptor(fieldName, obj.getClass().getSuperclass());
+                return pd.getReadMethod().invoke(obj);
+            }
+            catch (Exception e1) {
+                throw new JsonApiException("Getter for field '" + fieldName + "' does not exist");
+            }
         }
     }
 }
