@@ -60,17 +60,11 @@ class IncludedParser {
                     continue;
                 }
                 for (Object childRelationObjectAsItem : (Collection<Object>) childRelationObject) {
-                    if (this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem)) {
-                        continue;
-                    }
-
+                    this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem);
                     this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
                 }
             } else {
-                if (!this.addObjectToIncludeArray(includeArray, childRelationObject)) {
-                    continue;
-                }
-
+                this.addObjectToIncludeArray(includeArray, childRelationObject);
                 this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
             }
         }
