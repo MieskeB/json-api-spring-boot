@@ -15,7 +15,7 @@ For maven, add the following dependency to your dependencies:
 <dependency>
     <groupId>nl.michelbijnen.jsonapi</groupId>
     <artifactId>json-api</artifactId>
-    <version>1.5.5</version>
+    <version>1.5.6</version>
 </dependency>
 ```
 
