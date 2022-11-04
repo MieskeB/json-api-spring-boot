@@ -1,24 +1,13 @@
 package nl.michelbijnen.jsonapi.test.mock;
 
-import nl.michelbijnen.jsonapi.annotation.JsonApiId;
 import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
 import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
+import nl.michelbijnen.jsonapi.generator.JsonApiDtoExtendable;
 
 @JsonApiObject("Object")
-public class AppleDto implements Cloneable {
-    @JsonApiId
-    private String id;
-
+public class AppleDto extends JsonApiDtoExtendable implements Cloneable {
     @JsonApiProperty
     private String name;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;

@@ -49,6 +49,6 @@ public class UserTest {
     @Test
     public void testIfEmptyArrayWillWork() {
         String result = JsonApiConverter.convert(new ArrayList<>());
-        assertEquals("{\"data\":{}}", result);
+        assertEquals("{\"data\":[]}", result);
     }
 }

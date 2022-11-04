@@ -1,46 +1,20 @@
 package nl.michelbijnen.jsonapi.test.mock;
 
-import nl.michelbijnen.jsonapi.annotation.*;
-import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
+import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
+import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
+import nl.michelbijnen.jsonapi.annotation.JsonApiRelation;
+import nl.michelbijnen.jsonapi.generator.JsonApiDtoExtendable;
 
 @JsonApiObject("Object")
-public class ObjectDto implements Cloneable {
-    @JsonApiId
-    private String id;
-
+public class ObjectDto extends JsonApiDtoExtendable implements Cloneable {
     @JsonApiProperty
     private String name;
 
     @JsonApiRelation("Owner")
     private UserDto owner;
-    @JsonApiLink(relation = "Owner")
-    private String ownerSelfRel;
-    @JsonApiLink(value = JsonApiLinkType.RELATED, relation = "Owner")
-    private String ownerRelatedRel;
 
     @JsonApiRelation("Apple")
     private AppleDto apple;
-    @JsonApiLink(relation = "Apple")
-    private String appleSelfRel;
-
-    @JsonApiLink(JsonApiLinkType.FIRST)
-    private String firstRel;
-    @JsonApiLink(JsonApiLinkType.PREVIOUS)
-    private String previousRel;
-    @JsonApiLink
-    private String selfRel;
-    @JsonApiLink(JsonApiLinkType.NEXT)
-    private String nextRel;
-    @JsonApiLink(JsonApiLinkType.LAST)
-    private String lastRel;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
@@ -58,62 +32,6 @@ public class ObjectDto implements Cloneable {
         this.owner = owner;
     }
 
-    public String getSelfRel() {
-        return selfRel;
-    }
-
-    public void setSelfRel(String selfRel) {
-        this.selfRel = selfRel;
-    }
-
-    public String getNextRel() {
-        return nextRel;
-    }
-
-    public void setNextRel(String nextRel) {
-        this.nextRel = nextRel;
-    }
-
-    public String getFirstRel() {
-        return firstRel;
-    }
-
-    public void setFirstRel(String firstRel) {
-        this.firstRel = firstRel;
-    }
-
-    public String getPreviousRel() {
-        return previousRel;
-    }
-
-    public void setPreviousRel(String previousRel) {
-        this.previousRel = previousRel;
-    }
-
-    public String getLastRel() {
-        return lastRel;
-    }
-
-    public void setLastRel(String lastRel) {
-        this.lastRel = lastRel;
-    }
-
-    public String getOwnerSelfRel() {
-        return ownerSelfRel;
-    }
-
-    public void setOwnerSelfRel(String ownerSelfRel) {
-        this.ownerSelfRel = ownerSelfRel;
-    }
-
-    public String getOwnerRelatedRel() {
-        return ownerRelatedRel;
-    }
-
-    public void setOwnerRelatedRel(String ownerRelatedRel) {
-        this.ownerRelatedRel = ownerRelatedRel;
-    }
-
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
@@ -125,13 +43,5 @@ public class ObjectDto implements Cloneable {
 
     public void setApple(AppleDto apple) {
         this.apple = apple;
-    }
-
-    public String getAppleSelfRel() {
-        return appleSelfRel;
-    }
-
-    public void setAppleSelfRel(String appleSelfRel) {
-        this.appleSelfRel = appleSelfRel;
     }
 }
