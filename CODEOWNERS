@@ -1,5 +1,6 @@
 *                    @MieskeB @thesander705 @jasperstrijp
 
+CODEOWNERS           @MieskeB
 pom.xml              @MieskeB
 LICENSE              @MieskeB
 README_before_1_5.md @MieskeB
