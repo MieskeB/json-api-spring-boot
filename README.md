@@ -151,7 +151,7 @@ needs to know the base URL. Default for spring boot is `http://localhost:8080` a
 this URL.
 
 if you want to change the default value, you can set an environment variable (or put this in your
-server.properties): `jsonapi.baseurl=2`
+server.properties): `jsonapi.baseurl=http://localhost:8081`
 
 ```java
 import nl.michelbijnen.jsonapi.annotation.*;
