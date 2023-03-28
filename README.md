@@ -1,5 +1,5 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.michelbijnen.jsonapi/json-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.michelbijnen.jsonapi/json-api)
-[![codecov](https://codecov.io/gh/MieskeB/json-api-spring-boot/branch/master/graph/badge.svg)](https://codecov.io/gh/MieskeB/json-api-spring-boot)
+[![Coverage Status](https://coveralls.io/repos/github/MieskeB/json-api-spring-boot/badge.svg?branch=master)](https://coveralls.io/github/MieskeB/json-api-spring-boot?branch=master)
 
 # json-api-spring-boot
 
@@ -100,13 +100,13 @@ By adding this class, you can remove id and all links.
 
 There is a list of annotations that can be added.
 
-| Annotation | Description | Mandatory | JsonApiDtoExtendable |
-|----------------|------------------|-----|-----|
-| @JsonApiObject | The whole object | Yes | No |
-| @JsonApiId | The id of the object | Yes | Yes |
-| @JsonApiProperty | The properties of the object | No | No |
-| @JsonApiLink | The link with references | No | Yes |
-| @JsonApiRelation | A relation with another class | No | No |
+| Annotation       | Description                   | Mandatory | JsonApiDtoExtendable |
+| ---------------- | ----------------------------- | --------- | -------------------- |
+| @JsonApiObject   | The whole object              | Yes       | No                   |
+| @JsonApiId       | The id of the object          | Yes       | Yes                  |
+| @JsonApiProperty | The properties of the object  | No        | No                   |
+| @JsonApiLink     | The link with references      | No        | Yes                  |
+| @JsonApiRelation | A relation with another class | No        | No                   |
 
 Now to implement the example class above with the annotations:
 
