@@ -15,7 +15,10 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.Console;
 import java.net.MalformedURLException;
 
 public class LinkTest {
@@ -66,7 +69,9 @@ public class LinkTest {
         try {
             jsonObject.getJSONObject("links");
             jsonObject.getJSONObject("links").getString("self");
+            fail();
         } catch (JSONException e) {
+            assertTrue(e.getMessage().endsWith("not found."));
         }
     }
 
