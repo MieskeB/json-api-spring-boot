@@ -17,12 +17,13 @@ class LinksParser {
         JSONObject links = new JSONObject();
         boolean asList = this.isList(object);
         if (asList) {
-            if (((Collection<Object>)object).size() == 0) {
+            if (((Collection<Object>) object).size() == 0) {
                 return links;
             }
             object = ((Collection<Object>) object).iterator().next();
         }
-        Field[] allFields = Stream.concat(Arrays.stream(object.getClass().getDeclaredFields()), Arrays.stream(object.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
+        Field[] allFields = Stream.concat(Arrays.stream(object.getClass().getDeclaredFields()),
+                Arrays.stream(object.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
         for (Field field : allFields) {
             if (field.isAnnotationPresent(JsonApiLink.class)) {
                 if (field.getAnnotation(JsonApiLink.class).value().equals(JsonApiLinkType.ALL_SELF)) {
@@ -31,19 +32,20 @@ class LinksParser {
                         if (isValidUrl(href))
                             links.put(JsonApiLinkType.SELF.toString().toLowerCase(), href);
                     }
-                }
-                else if (field.getAnnotation(JsonApiLink.class).value().equals(JsonApiLinkType.SELF)) {
+                } else if (field.getAnnotation(JsonApiLink.class).value().equals(JsonApiLinkType.SELF)) {
                     if (!asList) {
                         Object href = GetterAndSetter.callGetter(object, field.getName());
                         if (isValidUrl(href))
                             links.put(field.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), href);
                     }
                 }
-                else {
-                    Object href = GetterAndSetter.callGetter(object, field.getName());
-                    if (isValidUrl(href))
-                        links.put(field.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), href);
-                }
+                // TODO next, previous, first, last, related rels for later updates
+                // else {
+                // Object href = GetterAndSetter.callGetter(object, field.getName());
+                // if (isValidUrl(href))
+                // links.put(field.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(),
+                // href);
+                // }
             }
         }
         return links;
