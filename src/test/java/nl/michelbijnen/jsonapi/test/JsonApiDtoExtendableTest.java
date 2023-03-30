@@ -41,6 +41,9 @@ public class JsonApiDtoExtendableTest {
 
         this.objectDto.setPreviousRel(baseUrl + "previous");
         assertEquals(baseUrl + "previous", this.objectDto.getPreviousRel());
+
+        this.objectDto.setRelatedRel(baseUrl + "related");
+        assertEquals(baseUrl + "related", this.objectDto.getRelatedRel());
     }
 
     @Test
