@@ -100,7 +100,7 @@ By adding this class, you can remove id and all links.
 
 There is a list of annotations that can be added.
 
-| Annotation       | Description                   | Mandatory | JsonApiDtoExtendable |
+| Annotation       | Description                   | Mandatory | Covered by JsonApiDtoExtendable |
 | ---------------- | ----------------------------- | --------- | -------------------- |
 | @JsonApiObject   | The whole object              | Yes       | No                   |
 | @JsonApiId       | The id of the object          | Yes       | Yes                  |
