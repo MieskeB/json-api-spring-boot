@@ -192,7 +192,7 @@ As a single object:
     "type": "User"
   },
   "links": {
-    "self": "http://localhost:8080/user/owner"
+    "self": "http://localhost:8080/user/the+id"
   }
 }
 ```
