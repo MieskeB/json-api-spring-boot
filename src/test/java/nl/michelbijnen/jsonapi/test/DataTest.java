@@ -29,9 +29,6 @@ public class DataTest {
 
     @Test
     public void testIfDataExists() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        System.out.println(mapper.writeValueAsString(objectDto));
-
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data"));
     }
