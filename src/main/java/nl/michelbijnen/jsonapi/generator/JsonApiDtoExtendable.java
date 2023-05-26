@@ -1,10 +1,13 @@
 package nl.michelbijnen.jsonapi.generator;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import nl.michelbijnen.jsonapi.annotation.JsonApiId;
 import nl.michelbijnen.jsonapi.annotation.JsonApiLink;
 import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
 import nl.michelbijnen.jsonapi.exception.JsonApiException;
 
+@JsonSerialize(using = JsonApiSerializer.class)
 public abstract class JsonApiDtoExtendable {
     @JsonApiId
     private String id;
