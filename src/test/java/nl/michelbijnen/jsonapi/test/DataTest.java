@@ -1,5 +1,7 @@
 package nl.michelbijnen.jsonapi.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import nl.michelbijnen.jsonapi.annotation.JsonApiId;
 import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
 import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
@@ -26,7 +28,10 @@ public class DataTest {
     }
 
     @Test
-    public void testIfDataExists() {
+    public void testIfDataExists() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.writeValueAsString(objectDto));
+
         JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
         assertNotNull(jsonObject.getJSONObject("data"));
     }
