@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
+import nl.michelbijnen.jsonapi.parser.JsonApiOptions;
 import nl.michelbijnen.jsonapi.test.mock.AppleDto;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
@@ -36,6 +37,84 @@ public class IncludedTest {
     }
 
     @Test
+    public void testFieldsFiltersPrimaryRelationships_OnlyLinkage_NoIncluded_Single() throws Exception {
+        java.util.HashMap<String, java.util.Set<String>> fieldsByType = new java.util.HashMap<>();
+        fieldsByType.put("User", new java.util.HashSet<>(java.util.Arrays.asList("mainObject")));
+        JsonApiOptions options = JsonApiOptions.builder()
+                .fieldsByType(fieldsByType)
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(userDto, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        JsonNode relationships = root.get("data").get("relationships");
+        assertNotNull(relationships);
+        assertNotNull(relationships.get("mainObject"));
+        assertNotNull(relationships.get("mainObject").get("data"));
+        assertNull(root.get("included"));
+    }
+
+    @Test
+    public void testIncludeAddsPrimaryRelationshipLinkage_AndSideLoads_Single() throws Exception {
+        JsonApiOptions options = JsonApiOptions.builder()
+                .includePaths(new java.util.HashSet<>(java.util.Arrays.asList("mainObject")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(userDto, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        JsonNode relationships = root.get("data").get("relationships");
+        assertNotNull(relationships);
+        assertNotNull(relationships.get("mainObject"));
+        assertNotNull(relationships.get("mainObject").get("data"));
+
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+        boolean foundMainObject = false;
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            if ("Object".equals(inc.get("type").asText()) &&
+                    userDto.getMainObject().getId().equals(inc.get("id").asText())) {
+                foundMainObject = true;
+                break;
+            }
+        }
+        assertTrue(foundMainObject);
+    }
+
+    @Test
+    public void testFieldsAndInclude_IncludeWins_RelationshipLinkageAndIncluded_Single() throws Exception {
+        java.util.HashMap<String, java.util.Set<String>> fieldsByType = new java.util.HashMap<>();
+        fieldsByType.put("User", new java.util.HashSet<>(java.util.Arrays.asList("mainObject")));
+        JsonApiOptions options = JsonApiOptions.builder()
+                .fieldsByType(fieldsByType)
+                .includePaths(new java.util.HashSet<>(java.util.Arrays.asList("mainObject")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(userDto, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        JsonNode relationships = root.get("data").get("relationships");
+        assertNotNull(relationships);
+        assertNotNull(relationships.get("mainObject"));
+        assertNotNull(relationships.get("mainObject").get("data"));
+
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+        boolean foundMainObject = false;
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            if ("Object".equals(inc.get("type").asText()) &&
+                    userDto.getMainObject().getId().equals(inc.get("id").asText())) {
+                foundMainObject = true;
+                break;
+            }
+        }
+        assertTrue(foundMainObject);
+    }
+
+
+    @Test
     public void testIfIncludedExists() throws Exception {
         JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
         assertNotNull(json.get("included"));
@@ -53,7 +132,7 @@ public class IncludedTest {
         assertEquals("User", json.get("included").get(0).get("type").asText());
     }
 
-    //region attributes
+//region attributes
 
     @Test
     public void testIfIncludedAttributesExists() throws Exception {
@@ -73,9 +152,9 @@ public class IncludedTest {
         assertEquals(objectDto.getOwner().getEmail(), json.get("included").get(0).get("attributes").get("email").asText());
     }
 
-    //endregion
+//endregion
 
-    //region links
+//region links
 
     @Test
     public void testIfIncludedLinksExists() throws Exception {
@@ -96,9 +175,9 @@ public class IncludedTest {
         assertEquals("http://localhost:8080/user/" + this.userDto.getId() + "?page=2", json.get("included").get(0).get("links").get("next").asText());
     }
 
-    //endregion
+//endregion
 
-    //region relationships
+//region relationships
 
     @Test
     public void testIfIncludedRelationshipsExists() throws Exception {
@@ -106,7 +185,7 @@ public class IncludedTest {
         assertNotNull(json.get("included").get(0).get("relationships"));
     }
 
-    //region mainObject
+//region mainObject
 
     @Test
     public void testIfIncludedRelationshipsMainObjectExists() throws Exception {
@@ -132,9 +211,9 @@ public class IncludedTest {
         assertEquals("Object", json.get("included").get(0).get("relationships").get("mainObject").get("data").get("type").asText());
     }
 
-    //endregion
+//endregion
 
-    //region childObjects
+//region childObjects
 
     @Test
     public void testIfIncludedRelationshipsChildObjectsExists() throws Exception {
@@ -183,9 +262,9 @@ public class IncludedTest {
         }
     }
 
-    //endregion
+//endregion
 
-    //region depth
+//region depth
 
     @Test
     public void testIfDepthIsWorking() throws Exception {
@@ -212,11 +291,11 @@ public class IncludedTest {
         }
     }
 
-    //endregion
+//endregion
 
-    //endregion
+//endregion
 
-    //region double relations inside included
+//region double relations inside included
 
     @Test
     public void testIfDoubleRelationsAreAddedOnlyOnceToIncludedFromList() throws Exception {
@@ -297,5 +376,5 @@ public class IncludedTest {
         }
     }
 
-    //endregion
+//endregion
 }

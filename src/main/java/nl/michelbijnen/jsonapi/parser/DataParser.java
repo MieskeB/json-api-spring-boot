@@ -9,6 +9,8 @@ import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 class DataParser {
@@ -47,6 +49,59 @@ class DataParser {
 
         RelationshipParser relationshipParser = new RelationshipParser();
         ObjectNode parsedRelationships = relationshipParser.parse(object, mapper);
+        if (!parsedRelationships.isEmpty())
+            data.set("relationships", parsedRelationships);
+
+        return data;
+    }
+
+    ObjectNode parse(Object object, boolean asRelation, ObjectMapper mapper, JsonApiOptions options, boolean isPrimaryResource) {
+        if (options == null) {
+            return parse(object, asRelation, mapper);
+        }
+
+        ObjectNode data = mapper.createObjectNode();
+
+        String type = this.getType(object);
+        data.put("type", type);
+        data.put("id", this.getId(object));
+
+        if (asRelation) {
+            return data;
+        }
+
+        AttributesParser attributesParser = new AttributesParser();
+        ObjectNode attributes = attributesParser.parse(object, mapper, options);
+        if (!attributes.isEmpty()) {
+            data.set("attributes", attributes);
+        }
+
+        Set<String> allowed = null;
+        Set<String> actualRelNames = new HashSet<>();
+        for (Field f : object.getClass().getDeclaredFields()) {
+            nl.michelbijnen.jsonapi.annotation.JsonApiRelation ann = f.getAnnotation(nl.michelbijnen.jsonapi.annotation.JsonApiRelation.class);
+            if (ann != null) {
+                actualRelNames.add(ann.value());
+            }
+        }
+        if (options.hasFieldsForType(type)) {
+            Set<String> fromFields = new HashSet<>(options.fieldsForType(type));
+            fromFields.retainAll(actualRelNames);
+            allowed = fromFields;
+        }
+
+        if (isPrimaryResource) {
+            Set<String> fromInclude = options.topLevelIncludeRelations();
+            if (!fromInclude.isEmpty()) {
+                if (allowed == null) {
+                    allowed = new HashSet<>();
+                }
+                allowed.addAll(fromInclude);
+            }
+        }
+
+        RelationshipParser relationshipParser = new RelationshipParser();
+        ObjectNode parsedRelationships = relationshipParser.parse(object, mapper, allowed);
         if (!parsedRelationships.isEmpty())
             data.set("relationships", parsedRelationships);
 

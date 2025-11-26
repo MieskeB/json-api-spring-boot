@@ -10,6 +10,7 @@ import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 class RelationshipParser {
     private final DataParser dataParser;
@@ -30,26 +31,36 @@ class RelationshipParser {
      * @return
      */
     ObjectNode parse(Object object, ObjectMapper mapper) {
+        return parse(object, mapper, null);
+    }
+
+    // NEW
+    ObjectNode parse(Object object, ObjectMapper mapper, Set<String> allowedRelationshipNames) {
         ObjectNode jsonObject = mapper.createObjectNode();
 
         for (Field field : object.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(JsonApiRelation.class)) {
-
-                Object relationObject = GetterAndSetter.callGetter(object, field.getName());
-
-                if (relationObject == null) {
-                    continue;
-                }
-
-                ObjectNode relation;
-                if (this.isList(relationObject)) {
-                    relation = this.parseRelationshipAsList(object, field, mapper);
-                } else {
-                    relation = this.parseRelationshipAsObject(object, field, mapper);
-                }
-                if (!relation.isEmpty())
-                    jsonObject.set(field.getAnnotation(JsonApiRelation.class).value(), relation);
+            if (!field.isAnnotationPresent(JsonApiRelation.class)) {
+                continue;
             }
+            String relName = field.getAnnotation(JsonApiRelation.class).value();
+            if (allowedRelationshipNames != null && !allowedRelationshipNames.contains(relName)) {
+                continue;
+            }
+
+            Object relationObject = GetterAndSetter.callGetter(object, field.getName());
+
+            if (relationObject == null) {
+                continue;
+            }
+
+            ObjectNode relation;
+            if (this.isList(relationObject)) {
+                relation = this.parseRelationshipAsList(object, field, mapper);
+            } else {
+                relation = this.parseRelationshipAsObject(object, field, mapper);
+            }
+            if (!relation.isEmpty())
+                jsonObject.set(relName, relation);
         }
         return jsonObject;
     }
@@ -63,7 +74,7 @@ class RelationshipParser {
             if (opt.isPresent()) {
                 relationObject = opt.get();
             } else {
-                return mapper.createObjectNode(); // Return empty relationship for absent Optional
+                return mapper.createObjectNode();
             }
         }
         ObjectNode linksParsed = this.linksParser.parse(relationObject, mapper);

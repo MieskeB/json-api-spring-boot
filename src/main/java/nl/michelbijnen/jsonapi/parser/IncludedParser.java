@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 class IncludedParser {
@@ -46,6 +47,27 @@ class IncludedParser {
 
     }
 
+    ArrayNode parse(Object object, int maxDepth, ObjectMapper mapper, JsonApiOptions options) {
+        return this.parse(object, mapper.createArrayNode(), maxDepth, 0, mapper, options);
+    }
+
+    ArrayNode parse(Object object, ArrayNode includeArray, int maxDepth, int currentDepth, ObjectMapper mapper, JsonApiOptions options) {
+        if (currentDepth == maxDepth) {
+            return includeArray;
+        }
+
+        if (!(object instanceof Iterable)) {
+            parseObject(object, includeArray, maxDepth, currentDepth, mapper, options);
+            return includeArray;
+        }
+
+        Iterable<Object> collection = (Iterable<Object>) object;
+        for (Object item : collection) {
+            parseObject(item, includeArray, maxDepth, currentDepth, mapper, options);
+        }
+        return includeArray;
+    }
+
     private void parseObject(Object object, ArrayNode includeArray, int maxDepth, int currentDepth, ObjectMapper mapper) {
         for (Field relationField : object.getClass().getDeclaredFields()) {
             if (!relationField.isAnnotationPresent(JsonApiRelation.class)) {
@@ -76,6 +98,49 @@ class IncludedParser {
             } else {
                 this.addObjectToIncludeArray(includeArray, childRelationObject, mapper);
                 this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1, mapper);
+            }
+        }
+    }
+
+    // options-aware parseObject
+    private void parseObject(Object object, ArrayNode includeArray, int maxDepth, int currentDepth, ObjectMapper mapper, JsonApiOptions options) {
+        Set<String> allowTop = (options == null) ? null : options.topLevelIncludeRelations();
+        boolean hasFilter = options != null && allowTop != null && !allowTop.isEmpty();
+
+        for (Field relationField : object.getClass().getDeclaredFields()) {
+            if (!relationField.isAnnotationPresent(JsonApiRelation.class)) {
+                continue;
+            }
+            String relName = relationField.getAnnotation(JsonApiRelation.class).value();
+
+            if (hasFilter && currentDepth == 0 && !allowTop.contains(relName)) {
+                continue; // restrict to requested top-level includes
+            }
+
+            Object childRelationObject = GetterAndSetter.callGetter(object, relationField.getName());
+            if (childRelationObject instanceof Optional) {
+                Optional<?> opt = (Optional<?>) childRelationObject;
+                if (opt.isPresent()) {
+                    childRelationObject = opt.get();
+                } else {
+                    continue;
+                }
+            }
+            if (childRelationObject == null) {
+                continue;
+            }
+
+            if (this.isList(childRelationObject)) {
+                if (((Collection<Object>) childRelationObject).isEmpty()) {
+                    continue;
+                }
+                for (Object childRelationObjectAsItem : (Collection<Object>) childRelationObject) {
+                    this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem, mapper);
+                    this.parse(childRelationObjectAsItem, includeArray, maxDepth, currentDepth + 1, mapper, options);
+                }
+            } else {
+                this.addObjectToIncludeArray(includeArray, childRelationObject, mapper);
+                this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1, mapper, options);
             }
         }
     }
