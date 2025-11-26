@@ -1,13 +1,12 @@
 package nl.michelbijnen.jsonapi.test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 import nl.michelbijnen.jsonapi.test.mock.AppleDto;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
 import nl.michelbijnen.jsonapi.test.mock.UserDto;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,6 +20,7 @@ public class EmptyTest {
     private ObjectDto objectDto;
     private UserDto userDto;
     private AppleDto appleDto;
+    private ObjectMapper mapper;
 
     @Before
     public void before() throws CloneNotSupportedException {
@@ -28,174 +28,148 @@ public class EmptyTest {
         this.objectDto = (ObjectDto) generator.getObjectDto().clone();
         this.userDto = (UserDto) generator.getUserDto().clone();
         this.appleDto = (AppleDto) generator.getAppleDto().clone();
+        this.mapper = new ObjectMapper();
     }
 
     @Test
-    public void testIfEmptyObjectWillReturnEmptyObject() {
+    public void testIfEmptyObjectWillReturnEmptyObject() throws Exception {
         ObjectDto test = null;
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(test));
-        try {
-            jsonObject.getJSONObject("data");
-        } catch (JSONException e) {
-            fail();
-        }
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(test));
+        assertNotNull(json.get("data"));
+        assertTrue(json.get("data").isObject());
+        assertEquals(0, json.get("data").size());
     }
 
     @Test
-    public void testIfEmptyListOfObjectsWillReturnEmptyList() {
+    public void testIfEmptyListOfObjectsWillReturnEmptyList() throws Exception {
         List<ObjectDto> tests = new ArrayList<>();
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(tests));
-        try {
-            assertEquals(0, jsonObject.getJSONArray("data").length());
-        } catch (JSONException e) {
-            fail();
-        }
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(tests));
+        assertNotNull(json.get("data"));
+        assertTrue(json.get("data").isArray());
+        assertEquals(0, json.get("data").size());
     }
 
     @Test
-    public void testIfEmptyLinksWontGetAdded() {
+    public void testIfEmptyLinksWontGetAdded() throws Exception {
         objectDto.setSelfRel("");
         objectDto.setAllSelfRel("");
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONObject("links");
-        });
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertNull(json.get("links"));
     }
 
     @Test
-    public void testIfNullLinksWontGetAdded() {
+    public void testIfNullLinksWontGetAdded() throws Exception {
         objectDto.setSelfRel(null);
         objectDto.setAllSelfRel(null);
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONObject("links");
-        });
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertNull(json.get("links"));
     }
 
     @Test
-    public void testIfEmptyRelationWontGetAdded() {
+    public void testIfEmptyRelationWontGetAdded() throws Exception {
         userDto.setMainObject(null);
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("mainObject");
-        });
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        assertNull(json.get("data").get("relationships").get("mainObject"));
     }
 
     @Test
-    public void testIfNullListRelationsWontGetAdded() {
+    public void testIfNullListRelationsWontGetAdded() throws Exception {
         userDto.setChildObjects(null);
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("childObjects");
-        });
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        assertNull(json.get("data").get("relationships").get("childObjects"));
     }
 
     @Test
-    public void testIfEmptyListRelationsWontGetAdded() {
+    public void testIfEmptyListRelationsWontGetAdded() throws Exception {
         userDto.setChildObjects(new ArrayList<>());
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONObject("data").getJSONObject("relationships").getJSONObject("childObjects");
-        });
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        assertNull(json.get("data").get("relationships").get("childObjects"));
     }
 
     @Test
-    public void testIfAllRelationsAreEmptyRelationshipsWontGetAdded() {
+    public void testIfAllRelationsAreEmptyRelationshipsWontGetAdded() throws Exception {
         userDto.setMainObject(null);
         userDto.setChildObjects(new ArrayList<>());
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONObject("data").getJSONObject("relationships");
-        });
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        assertNull(json.get("data").get("relationships"));
     }
 
     @Test
-    public void testIfAllRelationsAreNullRelationshipsWontGetAdded() {
+    public void testIfAllRelationsAreNullRelationshipsWontGetAdded() throws Exception {
         userDto.setMainObject(null);
         userDto.setChildObjects(null);
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONObject("data").getJSONObject("relationships");
-        });
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        assertNull(json.get("data").get("relationships"));
     }
 
     @Test
-    public void testIfEmptyRelationWontGetAddedToIncluded() {
+    public void testIfEmptyRelationWontGetAddedToIncluded() throws Exception {
         userDto.setMainObject(null);
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
 
-        assertEquals(2, jsonObject.getJSONArray("included").length());
+        assertEquals(2, json.get("included").size());
     }
 
     @Test
-    public void testIfNullListRelationsWontGetAddedToIncluded() {
+    public void testIfNullListRelationsWontGetAddedToIncluded() throws Exception {
         userDto.setChildObjects(null);
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
 
-        assertEquals(1, jsonObject.getJSONArray("included").length());
+        assertEquals(1, json.get("included").size());
     }
 
     @Test
-    public void testIfEmptyListRelationsWontGetAddedToIncluded() {
+    public void testIfEmptyListRelationsWontGetAddedToIncluded() throws Exception {
         userDto.setChildObjects(new ArrayList<>());
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
 
-        assertEquals(1, jsonObject.getJSONArray("included").length());
+        assertEquals(1, json.get("included").size());
     }
 
     @Test
-    public void testIfIncludedWontGetAddedWhenAllRelationsEmpty() {
+    public void testIfIncludedWontGetAddedWhenAllRelationsEmpty() throws Exception {
         userDto.setMainObject(null);
         userDto.setChildObjects(new ArrayList<>());
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
 
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONArray("included");
-        });
+        assertNull(json.get("included"));
     }
 
     @Test
-    public void testIfIncludedWontGetAddedWhenAllRelationsNull() {
+    public void testIfIncludedWontGetAddedWhenAllRelationsNull() throws Exception {
         userDto.setMainObject(null);
         userDto.setChildObjects(null);
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
 
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONArray("included");
-        });
+        assertNull(json.get("included"));
     }
 
     @Test
-    public void testIfEmptyPropertyWillGetAdded() {
+    public void testIfEmptyPropertyWillGetAdded() throws Exception {
         userDto.setUsername("");
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
 
-        try {
-            jsonObject.getJSONObject("data").getJSONObject("attributes").getString("username");
-        } catch (JSONException e) {
-            fail();
-        }
+        assertNotNull(json.get("data").get("attributes").get("username"));
+        assertEquals("", json.get("data").get("attributes").get("username").asText());
     }
 
     @Test
-    public void testIfnullPropertyWontGetAdded() {
+    public void testIfnullPropertyWontGetAdded() throws Exception {
         userDto.setUsername(null);
 
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-
-        assertThrows(JSONException.class, () -> {
-            jsonObject.getJSONObject("data").getJSONObject("attributes").getString("username");
-        });
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        JsonNode jsonNode = json.get("data").get("attributes").get("username");
+        assertTrue(jsonNode.isEmpty());
     }
 }

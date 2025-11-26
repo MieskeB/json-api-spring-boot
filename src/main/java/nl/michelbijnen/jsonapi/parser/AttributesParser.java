@@ -1,8 +1,9 @@
 package nl.michelbijnen.jsonapi.parser;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
-import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 
@@ -14,11 +15,12 @@ class AttributesParser {
      * @param object the object to be converted
      * @return the json of only the attributes
      */
-    JSONObject parse(Object object) {
-        JSONObject jsonObject = new JSONObject();
+    ObjectNode parse(Object object, ObjectMapper mapper) {
+        ObjectNode jsonObject = mapper.createObjectNode();
         for (Field field : object.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(JsonApiProperty.class)) {
-                jsonObject.put(field.getName(), GetterAndSetter.callGetter(object, field.getName()));
+                Object value = GetterAndSetter.callGetter(object, field.getName());
+                jsonObject.set(field.getName(), mapper.valueToTree(value));
             }
         }
         return jsonObject;

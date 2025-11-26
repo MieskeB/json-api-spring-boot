@@ -1,56 +1,66 @@
 package nl.michelbijnen.jsonapi.parser;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.michelbijnen.jsonapi.annotation.JsonApiId;
 import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
 import nl.michelbijnen.jsonapi.annotation.JsonApiRelation;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 class IncludedParser {
-    private DataParser dataParser;
-    private LinksParser linksParser;
+    private final DataParser dataParser;
+    private final LinksParser linksParser;
 
     IncludedParser() {
         this.dataParser = new DataParser();
         this.linksParser = new LinksParser();
     }
 
-    JSONArray parse(Object object, int maxDepth) {
-        return this.parse(object, new JSONArray(), maxDepth, 0);
+    ArrayNode parse(Object object, int maxDepth, ObjectMapper mapper) {
+        return this.parse(object, mapper.createArrayNode(), maxDepth, 0, mapper);
     }
 
-    JSONArray parse(Object object, JSONArray includeArray, int maxDepth, int currentDepth) {
+    ArrayNode parse(Object object, ArrayNode includeArray, int maxDepth, int currentDepth, ObjectMapper mapper) {
         if (currentDepth == maxDepth) {
             return includeArray;
         }
 
         if (!(object instanceof Iterable)) {
-            parseObject(object, includeArray, maxDepth, currentDepth);
+            parseObject(object, includeArray, maxDepth, currentDepth, mapper);
 
             return includeArray;
         }
 
         Iterable<Object> collection = (Iterable<Object>) object;
         for (Object item : collection) {
-            parseObject(item, includeArray, maxDepth, currentDepth);
+            parseObject(item, includeArray, maxDepth, currentDepth, mapper);
         }
         return includeArray;
 
     }
 
-    private void parseObject(Object object, JSONArray includeArray, int maxDepth, int currentDepth) {
+    private void parseObject(Object object, ArrayNode includeArray, int maxDepth, int currentDepth, ObjectMapper mapper) {
         for (Field relationField : object.getClass().getDeclaredFields()) {
             if (!relationField.isAnnotationPresent(JsonApiRelation.class)) {
                 continue;
             }
 
             Object childRelationObject = GetterAndSetter.callGetter(object, relationField.getName());
+            if (childRelationObject instanceof Optional) {
+                Optional<?> opt = (Optional<?>) childRelationObject;
+                if (opt.isPresent()) {
+                    childRelationObject = opt.get();
+                } else {
+                    continue; // Skip absent Optional
+                }
+            }
             if (childRelationObject == null) {
                 continue;
             }
@@ -60,28 +70,31 @@ class IncludedParser {
                     continue;
                 }
                 for (Object childRelationObjectAsItem : (Collection<Object>) childRelationObject) {
-                    this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem);
-                    this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
+                    this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem, mapper);
+                    this.parse(childRelationObjectAsItem, includeArray, maxDepth, currentDepth + 1, mapper);
                 }
             } else {
-                this.addObjectToIncludeArray(includeArray, childRelationObject);
-                this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1);
+                this.addObjectToIncludeArray(includeArray, childRelationObject, mapper);
+                this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1, mapper);
             }
         }
     }
 
-    private boolean addObjectToIncludeArray(JSONArray includeArray, Object relationObject) {
+    private boolean addObjectToIncludeArray(ArrayNode includeArray, Object relationObject, ObjectMapper mapper) {
         if (this.rootElementExists(includeArray, relationObject)) {
             return false;
         }
 
-        JSONObject singleIncludeObject = this.dataParser.parse(relationObject);
-        singleIncludeObject.put("links", this.linksParser.parse(relationObject));
-        includeArray.put(singleIncludeObject);
+        ObjectNode singleIncludeObject = this.dataParser.parse(relationObject, mapper);
+        ObjectNode links = this.linksParser.parse(relationObject, mapper);
+        if (!links.isEmpty()) {
+            singleIncludeObject.set("links", links);
+        }
+        includeArray.add(singleIncludeObject);
         return true;
     }
 
-    private boolean rootElementExists(JSONArray includeArray, Object relationObject) {
+    private boolean rootElementExists(ArrayNode includeArray, Object relationObject) {
         Field[] allFields = Stream.concat(Arrays.stream(relationObject.getClass().getDeclaredFields()), Arrays.stream(relationObject.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
         for (Field insideRelationField : allFields) {
             if (!insideRelationField.isAnnotationPresent(JsonApiId.class)) {
@@ -98,10 +111,10 @@ class IncludedParser {
         return false;
     }
 
-    private boolean idInIncludedArray(JSONArray includeArray, String id, String type) {
-        for (int i = 0; i < includeArray.length(); i++) {
-            JSONObject rootObjectInclude = includeArray.getJSONObject(i);
-            if (rootObjectInclude.getString("id").equals(id) && rootObjectInclude.getString("type").equals(type)) {
+    private boolean idInIncludedArray(ArrayNode includeArray, String id, String type) {
+        for (int i = 0; i < includeArray.size(); i++) {
+            ObjectNode rootObjectInclude = (ObjectNode) includeArray.get(i);
+            if (rootObjectInclude.get("id").asText().equals(id) && rootObjectInclude.get("type").asText().equals(type)) {
                 return true;
             }
         }

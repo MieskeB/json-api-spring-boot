@@ -1,11 +1,11 @@
 package nl.michelbijnen.jsonapi.test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -18,70 +18,67 @@ import static org.junit.Assert.fail;
 public class LinkTest {
 
     private ObjectDto objectDto;
+    private ObjectMapper mapper;
 
     @Before
     public void before() throws CloneNotSupportedException {
         MockDataGenerator generator = MockDataGenerator.getInstance();
         this.objectDto = (ObjectDto) generator.getObjectDto().clone();
+        this.mapper = new ObjectMapper();
     }
 
     @Test
-    public void testIfLinksExists() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertNotNull(jsonObject.getJSONObject("links"));
-    }
-
-    @Test
-    @Ignore("Planned for future update")
-    public void testIfFirstRelWorks() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=0",
-                jsonObject.getJSONObject("links").getString("first"));
+    public void testIfLinksExists() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertNotNull(json.get("links"));
     }
 
     @Test
     @Ignore("Planned for future update")
-    public void testIfPreviousRelWorks() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=0",
-                jsonObject.getJSONObject("links").getString("previous"));
+    public void testIfFirstRelWorks() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=0", json.get("links").get("first").asText());
     }
 
     @Test
-    public void testIfSelfRelWorks() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals("http://localhost:8080/object/" + this.objectDto.getId(),
-                jsonObject.getJSONObject("links").getString("self"));
+    @Ignore("Planned for future update")
+    public void testIfPreviousRelWorks() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=0", json.get("links").get("previous").asText());
     }
 
     @Test
-    public void testIfMalformedUrlThrowsException() {
+    public void testIfSelfRelWorks() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId(), json.get("links").get("self").asText());
+    }
+
+    @Test
+    public void testIfMalformedUrlThrowsException() throws Exception {
         String tempUrl = this.objectDto.getSelfRel();
         this.objectDto.setSelfRel("NotValidUrl");
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(this.objectDto));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(this.objectDto));
         this.objectDto.setSelfRel(tempUrl);
         try {
-            jsonObject.getJSONObject("links");
-            jsonObject.getJSONObject("links").getString("self");
+            json.get("links");
+            json.get("links").get("self");
             fail();
-        } catch (JSONException e) {
-            assertTrue(e.getMessage().endsWith("not found."));
+        } catch (NullPointerException e) {
+            assertTrue(e.getMessage().endsWith("\"com.fasterxml.jackson.databind.JsonNode.get(String)\" is null"));
         }
     }
 
     @Test
     @Ignore("Planned for future update")
-    public void testIfNextRelWorks() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=2",
-                jsonObject.getJSONObject("links").getString("next"));
+    public void testIfNextRelWorks() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=2", json.get("links").get("next").asText());
     }
 
     @Test
     @Ignore("Planned for future update")
-    public void testIfLastRelWorks() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=2",
-                jsonObject.getJSONObject("links").getString("last"));
+    public void testIfLastRelWorks() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals("http://localhost:8080/object/" + this.objectDto.getId() + "?page=2", json.get("links").get("last").asText());
     }
 }

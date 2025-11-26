@@ -1,7 +1,9 @@
 package nl.michelbijnen.jsonapi.parser;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.Collection;
 
@@ -26,61 +28,59 @@ class JsonApiParser {
      * @param maxDepth the depth of the models to return
      * @return The converted json
      */
-    JSONObject parse(Object object, int maxDepth) {
+    ObjectNode parse(Object object, int maxDepth, ObjectMapper mapper) {
         if (object == null) {
-            JSONObject nullObject = new JSONObject();
-            nullObject.put("data", new JSONObject());
+            ObjectNode nullObject = mapper.createObjectNode();
+            nullObject.set("data", mapper.createObjectNode());
             return nullObject;
         }
         if (this.isList(object)) {
-            return this.convertObjectAsList(object, maxDepth);
+            return this.convertObjectAsList(object, maxDepth, mapper);
         } else {
-            return this.convertObjectAsObject(object, maxDepth);
+            return this.convertObjectAsObject(object, maxDepth, mapper);
         }
     }
 
-    private JSONObject convertObjectAsList(Object object, int maxDepth) {
-        JSONObject jsonObject = new JSONObject();
+    private ObjectNode convertObjectAsList(Object object, int maxDepth, ObjectMapper mapper) {
+        ObjectNode jsonObject = mapper.createObjectNode();
 
         if (((Collection<Object>) object).size() == 0) {
-            jsonObject.put("data", new JSONArray());
+            jsonObject.set("data", mapper.createArrayNode());
             return jsonObject;
         }
 
-        JSONObject parsedLinks = this.linksParser.parse(object);
-        if (!parsedLinks.isEmpty()) {
-            jsonObject.put("links", parsedLinks);
+        ObjectNode parsedLinks = this.linksParser.parse(object, mapper);
+        if (parsedLinks.size() > 0) {
+            jsonObject.set("links", parsedLinks);
         }
 
-        JSONArray dataJsonArray = new JSONArray();
+        ArrayNode dataJsonArray = mapper.createArrayNode();
         for (Object loopObject : (Collection<Object>) object) {
-            dataJsonArray.put(this.dataParser.parse(loopObject));
+            dataJsonArray.add(this.dataParser.parse(loopObject, mapper));
         }
-        jsonObject.put("data", dataJsonArray);
+        jsonObject.set("data", dataJsonArray);
 
-        JSONArray includedJsonArray = new JSONArray();
+        ArrayNode includedJsonArray = mapper.createArrayNode();
         for (Object loopObject : (Collection<Object>) object) {
-            for (Object includedObject : this.includedParser.parse(loopObject, maxDepth)) {
-                includedJsonArray.put(includedObject);
-            }
+            this.includedParser.parse(loopObject, includedJsonArray, maxDepth, 0, mapper);
         }
-        if (includedJsonArray.length() != 0)
-            jsonObject.put("included", includedJsonArray);
+        if (includedJsonArray.size() != 0)
+            jsonObject.set("included", includedJsonArray);
 
         return jsonObject;
     }
 
-    private JSONObject convertObjectAsObject(Object object, int maxDepth) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("data", this.dataParser.parse(object));
+    private ObjectNode convertObjectAsObject(Object object, int maxDepth, ObjectMapper mapper) {
+        ObjectNode jsonObject = mapper.createObjectNode();
+        jsonObject.set("data", this.dataParser.parse(object, mapper));
 
-        JSONObject parsedLinks = this.linksParser.parse(object);
-        if (!parsedLinks.isEmpty())
-            jsonObject.put("links", parsedLinks);
+        ObjectNode parsedLinks = this.linksParser.parse(object, mapper);
+        if (parsedLinks.size() > 0)
+            jsonObject.set("links", parsedLinks);
 
-        JSONArray parsedIncluded = this.includedParser.parse(object, maxDepth);
-        if (parsedIncluded.length() != 0)
-            jsonObject.put("included", parsedIncluded);
+        ArrayNode parsedIncluded = this.includedParser.parse(object, maxDepth, mapper);
+        if (parsedIncluded.size() != 0)
+            jsonObject.set("included", parsedIncluded);
 
         return jsonObject;
     }

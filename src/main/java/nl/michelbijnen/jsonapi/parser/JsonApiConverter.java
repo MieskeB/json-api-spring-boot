@@ -1,6 +1,10 @@
 package nl.michelbijnen.jsonapi.parser;
 
-import org.json.JSONObject;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class JsonApiConverter {
 
@@ -13,8 +17,14 @@ public class JsonApiConverter {
     }
 
     public static String convert(Object object, int depth){
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         JsonApiParser jsonApiParser = new JsonApiParser();
-        JSONObject result = jsonApiParser.parse(object, depth);
-        return result.toString();
+        ObjectNode result = jsonApiParser.parse(object, depth, mapper);
+        try {
+            return mapper.writeValueAsString(result);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting to JSON", e);
+        }
     }
 }

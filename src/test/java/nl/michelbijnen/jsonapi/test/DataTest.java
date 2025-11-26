@@ -1,5 +1,7 @@
 package nl.michelbijnen.jsonapi.test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.michelbijnen.jsonapi.annotation.JsonApiId;
 import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
 import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
@@ -7,7 +9,6 @@ import nl.michelbijnen.jsonapi.exception.JsonApiException;
 import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,42 +19,43 @@ import static org.junit.Assert.fail;
 public class DataTest {
 
     private ObjectDto objectDto;
+    private ObjectMapper mapper;
 
     @Before
     public void before() throws CloneNotSupportedException {
         MockDataGenerator generator = MockDataGenerator.getInstance();
         this.objectDto = (ObjectDto) generator.getObjectDto().clone();
+        this.mapper = new ObjectMapper();
     }
 
     @Test
-    public void testIfDataExists() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertNotNull(jsonObject.getJSONObject("data"));
+    public void testIfDataExists() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertNotNull(json.get("data"));
     }
 
     @Test
-    public void testIfIdWorks() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getId(), jsonObject.getJSONObject("data").getString("id"));
+    public void testIfIdWorks() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals(objectDto.getId(), json.get("data").get("id").asText());
     }
 
     @Test
-    public void testIfTypeWorks() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals("Object", jsonObject.getJSONObject("data").getString("type"));
+    public void testIfTypeWorks() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals("Object", json.get("data").get("type").asText());
     }
 
     @Test
-    public void testIfAttributesExists() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertNotNull(jsonObject.getJSONObject("data").getJSONObject("attributes"));
+    public void testIfAttributesExists() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertNotNull(json.get("data").get("attributes"));
     }
 
     @Test
-    public void testIfAttributeNameWorks() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(objectDto));
-        assertEquals(objectDto.getName(),
-                jsonObject.getJSONObject("data").getJSONObject("attributes").getString("name"));
+    public void testIfAttributeNameWorks() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals(objectDto.getName(), json.get("data").get("attributes").get("name").asText());
     }
 
     @Test

@@ -1,19 +1,19 @@
 package nl.michelbijnen.jsonapi.parser;
 
-import nl.michelbijnen.jsonapi.annotation.JsonApiId;
-import nl.michelbijnen.jsonapi.annotation.JsonApiLink;
-import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.michelbijnen.jsonapi.annotation.JsonApiRelation;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Optional;
 
 class RelationshipParser {
-    private DataParser dataParser;
-    private LinksParser linksParser;
+    private final DataParser dataParser;
+    private final LinksParser linksParser;
 
     RelationshipParser() {
         this.dataParser = new DataParser();
@@ -29,8 +29,8 @@ class RelationshipParser {
      * @param object
      * @return
      */
-    JSONObject parse(Object object) {
-        JSONObject jsonObject = new JSONObject();
+    ObjectNode parse(Object object, ObjectMapper mapper) {
+        ObjectNode jsonObject = mapper.createObjectNode();
 
         for (Field field : object.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(JsonApiRelation.class)) {
@@ -41,52 +41,73 @@ class RelationshipParser {
                     continue;
                 }
 
-                JSONObject relation;
+                ObjectNode relation;
                 if (this.isList(relationObject)) {
-                    relation = this.parseRelationshipAsList(object, field);
+                    relation = this.parseRelationshipAsList(object, field, mapper);
                 } else {
-                    relation = this.parseRelationshipAsObject(object, field);
+                    relation = this.parseRelationshipAsObject(object, field, mapper);
                 }
                 if (!relation.isEmpty())
-                    jsonObject.put(field.getAnnotation(JsonApiRelation.class).value(), relation);
+                    jsonObject.set(field.getAnnotation(JsonApiRelation.class).value(), relation);
             }
         }
         return jsonObject;
     }
 
-    private JSONObject parseRelationshipAsObject(Object object, Field field) {
-        JSONObject relationship = new JSONObject();
+    private ObjectNode parseRelationshipAsObject(Object object, Field field, ObjectMapper mapper) {
+        ObjectNode relationship = mapper.createObjectNode();
 
         Object relationObject = GetterAndSetter.callGetter(object, field.getName());
+        if (relationObject instanceof Optional) {
+            Optional<?> opt = (Optional<?>) relationObject;
+            if (opt.isPresent()) {
+                relationObject = opt.get();
+            } else {
+                return mapper.createObjectNode(); // Return empty relationship for absent Optional
+            }
+        }
+        ObjectNode linksParsed = this.linksParser.parse(relationObject, mapper);
+        if (!linksParsed.isEmpty())
+            relationship.set("links", linksParsed);
 
-        JSONObject linksParser = this.linksParser.parse(relationObject);
-        if (!linksParser.isEmpty())
-            relationship.put("links", linksParser);
-
-        JSONObject dataParser = this.dataParser.parse(relationObject, true);
-        if (!dataParser.isEmpty())
-            relationship.put("data", dataParser);
+        ObjectNode dataParsed = this.dataParser.parse(relationObject, true, mapper);
+        if (!dataParsed.isEmpty())
+            relationship.set("data", dataParsed);
 
         return relationship;
     }
 
-    private JSONObject parseRelationshipAsList(Object object, Field field) {
-        JSONObject relationship = new JSONObject();
+    private ObjectNode parseRelationshipAsList(Object object, Field field, ObjectMapper mapper) {
+        ObjectNode relationship = mapper.createObjectNode();
 
         Collection<Object> relationObjectCollection = (Collection<Object>) GetterAndSetter.callGetter(object, field.getName());
 
-        JSONObject linksParser = this.linksParser.parse(relationObjectCollection);
-        if (!linksParser.isEmpty())
-            relationship.put("links", linksParser);
+        ObjectNode linksParsed = this.linksParser.parse(relationObjectCollection, mapper);
+        if (!linksParsed.isEmpty())
+            relationship.set("links", linksParsed);
 
-        JSONArray dataForEach = new JSONArray();
+        ArrayNode dataForEach = mapper.createArrayNode();
         for (Object relationObject : relationObjectCollection) {
-            dataForEach.put(this.dataParser.parse(relationObject, true));
+            ObjectNode dataObj = this.dataParser.parse(relationObject, true, mapper);
+            if (!this.dataExistsInArray(dataForEach, dataObj)) {
+                dataForEach.add(dataObj);
+            }
         }
         if (!dataForEach.isEmpty())
-            relationship.put("data", dataForEach);
+            relationship.set("data", dataForEach);
 
         return relationship;
+    }
+
+    private boolean dataExistsInArray(ArrayNode dataArray, ObjectNode newData) {
+        String id = newData.get("id").asText();
+        String type = newData.get("type").asText();
+        for (JsonNode existing : dataArray) {
+            if (existing.get("id").asText().equals(id) && existing.get("type").asText().equals(type)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isList(Object object) {

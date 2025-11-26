@@ -1,9 +1,10 @@
 package nl.michelbijnen.jsonapi.parser;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.michelbijnen.jsonapi.annotation.JsonApiLink;
 import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
-import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
@@ -13,11 +14,11 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 class LinksParser {
-    JSONObject parse(Object object) {
-        JSONObject links = new JSONObject();
+    ObjectNode parse(Object object, ObjectMapper mapper) {
+        ObjectNode links = mapper.createObjectNode();
         boolean asList = this.isList(object);
         if (asList) {
-            if (((Collection<Object>) object).size() == 0) {
+            if (((Collection<Object>) object).isEmpty()) {
                 return links;
             }
             object = ((Collection<Object>) object).iterator().next();
@@ -30,13 +31,13 @@ class LinksParser {
                     if (asList) {
                         Object href = GetterAndSetter.callGetter(object, field.getName());
                         if (isValidUrl(href))
-                            links.put(JsonApiLinkType.SELF.toString().toLowerCase(), href);
+                            links.put(JsonApiLinkType.SELF.toString().toLowerCase(), href.toString());
                     }
                 } else if (field.getAnnotation(JsonApiLink.class).value().equals(JsonApiLinkType.SELF)) {
                     if (!asList) {
                         Object href = GetterAndSetter.callGetter(object, field.getName());
                         if (isValidUrl(href))
-                            links.put(field.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), href);
+                            links.put(field.getAnnotation(JsonApiLink.class).value().toString().toLowerCase(), href.toString());
                     }
                 }
                 // TODO next, previous, first, last, related rels for later updates
