@@ -352,4 +352,34 @@ public class FieldsAndIncludeTest {
             }
         }
     }
+
+    @Test
+    public void testFieldsForIncludedType_AppleAttributesFiltered() throws Exception {
+        UserDto userDto = (UserDto) generator.getUserDto().clone();
+        HashMap<String, Set<String>> fieldsByType = new HashMap<>();
+        fieldsByType.put("Apple", new HashSet<>(Collections.singletonList("name")));
+        JsonApiOptions options = JsonApiOptions.builder()
+                .fieldsByType(fieldsByType)
+                .includePaths(new HashSet<>(Arrays.asList("childObjects", "childObjects.apple")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(userDto, 2, options);
+        JsonNode root = mapper.readTree(jsonStr);
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+
+        JsonNode found = null;
+        String appleId = userDto.getChildObjects().get(0).getApple().getId();
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            if ("Apple".equals(inc.get("type").asText()) && appleId.equals(inc.get("id").asText())) {
+                found = inc;
+                break;
+            }
+        }
+        assertNotNull("Included apple should be present", found);
+        JsonNode attrs = found.get("attributes");
+        assertNotNull(attrs);
+        assertNotNull(attrs.get("name"));
+    }
 }

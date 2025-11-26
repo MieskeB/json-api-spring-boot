@@ -341,7 +341,7 @@ public class IncludedTest {
 
     @Test
     public void testNoDuplicatesInIncluded() throws Exception {
-        // Arrange: Create two users sharing the same relations (shallow clone)
+
         UserDto user1 = generator.getUserDto();
         UserDto user2 = null;
         try {
@@ -355,13 +355,10 @@ public class IncludedTest {
 
         List<UserDto> users = Arrays.asList(user1, user2);
 
-        // Use depth=2 to include nested relations like apples
         JsonNode json = mapper.readTree(JsonApiConverter.convert(users, 2));
 
-        // Act: Extract included array
         ArrayNode included = (ArrayNode) json.get("included");
 
-        // Assert: No duplicates based on type and id
         Set<String> typeIdSet = new HashSet<>();
         for (int i = 0; i < included.size(); i++) {
             JsonNode obj = included.get(i);
@@ -374,4 +371,105 @@ public class IncludedTest {
     }
 
 //endregion
+
+    @Test
+    public void testFieldsFiltersAttributesOnly_Email_NoRelationships() throws Exception {
+        HashMap<String, Set<String>> fieldsByType = new HashMap<>();
+        fieldsByType.put("User", new HashSet<>(Collections.singletonList("email")));
+        JsonApiOptions options = JsonApiOptions.builder()
+                .fieldsByType(fieldsByType)
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(userDto, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        JsonNode data = root.get("data");
+        JsonNode attrs = data.get("attributes");
+        assertNotNull(attrs);
+        assertNotNull(attrs.get("email"));
+        assertNull("username should be filtered out", attrs.get("username"));
+
+        assertNull(data.get("relationships"));
+    }
+
+    @Test
+    public void testFieldsForIncludedType_ObjectAttributesFiltered() throws Exception {
+        HashMap<String, Set<String>> fieldsByType = new HashMap<>();
+        fieldsByType.put("Object", new HashSet<>(Collections.singletonList("name")));
+        JsonApiOptions options = JsonApiOptions.builder()
+                .fieldsByType(fieldsByType)
+                .includePaths(new HashSet<>(Collections.singletonList("mainObject")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(userDto, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+
+        JsonNode found = null;
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            if ("Object".equals(inc.get("type").asText()) &&
+                    userDto.getMainObject().getId().equals(inc.get("id").asText())) {
+                found = inc;
+                break;
+            }
+        }
+        assertNotNull("Included mainObject should be present", found);
+        JsonNode attrs = found.get("attributes");
+        assertNotNull(attrs);
+        assertNotNull(attrs.get("name"));
+    }
+
+    @Test
+    public void testIncludedDedupAcrossMultiplePaths() throws Exception {
+        JsonApiOptions options = JsonApiOptions.builder()
+                .includePaths(new HashSet<>(Arrays.asList("childObjects.apple", "mainObject.apple", "childObjects", "mainObject")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(userDto, 2, options);
+        JsonNode root = mapper.readTree(jsonStr);
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+
+        String appleId = userDto.getMainObject().getApple().getId();
+        int count = 0;
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            if ("Apple".equals(inc.get("type").asText()) && appleId.equals(inc.get("id").asText())) {
+                count++;
+            }
+        }
+        assertEquals("Apple should appear only once in included despite multiple paths", 1, count);
+    }
+
+    @Test
+    public void testConvertNullPrimary_ReturnsEmptyDataObject() throws Exception {
+        JsonNode root = mapper.readTree(JsonApiConverter.convert(null));
+        assertNotNull(root.get("data"));
+        assertTrue(root.get("data").isObject());
+        assertEquals(0, root.get("data").size());
+    }
+
+    @Test
+    public void testConvertEmptyListPrimary_ReturnsEmptyDataArray_NoIncluded() throws Exception {
+        List<UserDto> empty = Collections.emptyList();
+        JsonNode root = mapper.readTree(JsonApiConverter.convert(empty));
+        assertNotNull(root.get("data"));
+        assertTrue(root.get("data").isArray());
+        assertEquals(0, root.get("data").size());
+        assertTrue(root.path("included").isMissingNode() || root.get("included").isEmpty());
+    }
+
+    @Test
+    public void testIncludeSkipsEmptyCollections_NoIncludedProduced() throws Exception {
+        userDto.setChildObjects(new ArrayList<>());
+        JsonApiOptions options = JsonApiOptions.builder()
+                .includePaths(new HashSet<>(Collections.singletonList("childObjects")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(userDto, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+        assertTrue(root.path("included").isMissingNode() || root.get("included").isEmpty());
+    }
 }

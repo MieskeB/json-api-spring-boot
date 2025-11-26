@@ -19,7 +19,6 @@ public class EmptyTest {
 
     private ObjectDto objectDto;
     private UserDto userDto;
-    private AppleDto appleDto;
     private ObjectMapper mapper;
 
     @Before
@@ -27,7 +26,6 @@ public class EmptyTest {
         MockDataGenerator generator = MockDataGenerator.getInstance();
         this.objectDto = (ObjectDto) generator.getObjectDto().clone();
         this.userDto = (UserDto) generator.getUserDto().clone();
-        this.appleDto = (AppleDto) generator.getAppleDto().clone();
         this.mapper = new ObjectMapper();
     }
 
