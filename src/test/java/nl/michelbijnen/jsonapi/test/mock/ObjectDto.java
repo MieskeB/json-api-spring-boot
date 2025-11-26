@@ -10,10 +10,10 @@ public class ObjectDto extends JsonApiDtoExtendable implements Cloneable {
     @JsonApiProperty
     private String name;
 
-    @JsonApiRelation("Owner")
+    @JsonApiRelation("owner")
     private UserDto owner;
 
-    @JsonApiRelation("Apple")
+    @JsonApiRelation("apple")
     private AppleDto apple;
 
     public String getName() {

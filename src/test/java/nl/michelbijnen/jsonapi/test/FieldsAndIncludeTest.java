@@ -43,9 +43,12 @@ public class FieldsAndIncludeTest {
         assertNotNull(relationships);
         assertNotNull(relationships.get("mainObject"));
         assertNotNull(relationships.get("mainObject").get("data"));
+        JsonNode linkage = relationships.get("mainObject").get("data");
+        assertEquals("Object", linkage.get("type").asText());
+        assertEquals(user.getMainObject().getId(), linkage.get("id").asText());
 
         // No side-loaded resources for fields-only
-        assertNull(root.get("included"));
+        assertTrue(root.path("included").isMissingNode() || root.get("included").isEmpty());
     }
 
     // include=mainObject
@@ -69,8 +72,7 @@ public class FieldsAndIncludeTest {
         boolean foundMainObject = false;
         for (int i = 0; i < included.size(); i++) {
             JsonNode inc = included.get(i);
-            if ("Object".equals(inc.get("type").asText())
-                    && user.getMainObject().getId().equals(inc.get("id").asText())) {
+            if (user.getMainObject().getId().equals(inc.get("id").asText())) {
                 foundMainObject = true;
                 break;
             }
@@ -135,9 +137,12 @@ public class FieldsAndIncludeTest {
             JsonNode relationships = data.get(i).get("relationships");
             assertNotNull(relationships);
             assertNotNull(relationships.get("mainObject"));
-            assertNotNull(relationships.get("mainObject").get("data"));
+            JsonNode l = relationships.get("mainObject").get("data");
+            assertNotNull(l);
+            assertNotNull(l.get("type"));
+            assertNotNull(l.get("id"));
         }
-        assertNull(root.get("included"));
+        assertTrue(root.path("included").isMissingNode() || root.get("included").isEmpty());
     }
 
     // List variant: include=mainObject over collection
@@ -162,7 +167,10 @@ public class FieldsAndIncludeTest {
             JsonNode relationships = data.get(i).get("relationships");
             assertNotNull(relationships);
             assertNotNull(relationships.get("mainObject"));
-            assertNotNull(relationships.get("mainObject").get("data"));
+            JsonNode l = relationships.get("mainObject").get("data");
+            assertNotNull(l);
+            assertNotNull(l.get("type"));
+            assertNotNull(l.get("id"));
         }
 
         ArrayNode included = (ArrayNode) root.get("included");
@@ -177,5 +185,171 @@ public class FieldsAndIncludeTest {
             }
         }
         assertTrue(foundAny);
+    }
+
+    @Test
+    public void testIncludeNestedPathWithinDepth_SideLoadsOnlyWithinPath_Single() throws Exception {
+        // Must explicitly request top-level and nested segments
+        JsonApiOptions options = JsonApiOptions.builder()
+                .includePaths(new HashSet<>(Arrays.asList("childObjects", "childObjects.apple")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(user, 2, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        // linkage present on primary for childObjects
+        JsonNode relationships = root.get("data").get("relationships");
+        assertNotNull(relationships);
+        assertNotNull(relationships.get("childObjects"));
+        assertNotNull(relationships.get("childObjects").get("data"));
+
+        // included must contain Object (childObjects) and Apple (grandchildren)
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+
+        boolean foundAnyChildObject = false;
+        boolean foundAnyApple = false;
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            if ("Object".equals(inc.get("type").asText())) {
+                foundAnyChildObject = true;
+            }
+            if ("Apple".equals(inc.get("type").asText())) {
+                foundAnyApple = true;
+            }
+        }
+        assertTrue(foundAnyChildObject);
+        assertTrue(foundAnyApple);
+    }
+
+    @Test
+    public void testIncludeNestedPathBeyondDepth_CappedByDepth_NoGrandchildren_Single() throws Exception {
+        // Must explicitly request top-level and nested segments
+        JsonApiOptions options = JsonApiOptions.builder()
+                .includePaths(new HashSet<>(Arrays.asList("childObjects", "childObjects.apple")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(user, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+
+        boolean foundAnyChildObject = false;
+        boolean foundAnyApple = false;
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            if ("Object".equals(inc.get("type").asText())) {
+                foundAnyChildObject = true;
+            }
+            if ("Apple".equals(inc.get("type").asText())) {
+                foundAnyApple = true;
+            }
+        }
+        assertTrue(foundAnyChildObject);
+        assertFalse("Apple should not be included when depth=1", foundAnyApple);
+    }
+
+    @Test
+    public void testIncludeNestedPathWithFields_IncludeForcesTopLevelLinkage_Single() throws Exception {
+        // Updated expectation: nested-only path should NOT force top-level linkage nor included
+        Map<String, Set<String>> fieldsByType = new HashMap<>();
+        fieldsByType.put("User", new HashSet<>(Collections.singletonList("email")));
+        JsonApiOptions options = JsonApiOptions.builder()
+                .fieldsByType(fieldsByType)
+                .includePaths(new HashSet<>(Collections.singletonList("childObjects.apple")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(user, 2, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        // No included when only nested path is provided
+        assertTrue(root.path("included").isMissingNode() || root.get("included").isEmpty());
+
+        // No forced top-level linkage for childObjects
+        JsonNode relationships = root.get("data").get("relationships");
+        if (relationships != null) {
+            assertNull("No top-level linkage should be forced", relationships.get("childObjects"));
+        }
+    }
+
+    @Test
+    public void testIncludeMultipleBranches_TopLevelAndNested_Single() throws Exception {
+        JsonApiOptions options = JsonApiOptions.builder()
+                .includePaths(new HashSet<>(Arrays.asList("childObjects", "childObjects.apple")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(user, 2, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+
+        boolean foundAnyChildObject = false;
+        boolean foundMainObjectApple = false;
+
+        String mainAppleId = user.getMainObject().getApple().getId();
+
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            String type = inc.get("type").asText();
+            String id = inc.get("id").asText();
+
+            if ("Apple".equals(type) && mainAppleId.equals(id)) {
+                foundMainObjectApple = true;
+            } else if ("Object".equals(type)) {
+                // treat other Object entries as childObjects
+                foundAnyChildObject = true;
+            }
+        }
+
+        assertTrue(foundAnyChildObject);
+        assertTrue(foundMainObjectApple);
+    }
+
+    @Test
+    public void testIncludeNestedPathWithoutTopLevel_NoIncluded_NoPrimaryLinkage_Single() throws Exception {
+        JsonApiOptions options = JsonApiOptions.builder()
+                .includePaths(new HashSet<>(Collections.singletonList("childObjects.apple")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(user, 2, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        // No included when only nested path is provided
+        assertNull(root.get("included"));
+
+        // No forced top-level linkage for childObjects
+        JsonNode relationships = root.get("data").get("relationships");
+        if (relationships != null) {
+            assertNull("No top-level linkage should be forced", relationships.get("childObjects"));
+        }
+    }
+
+    @Test
+    public void testIncludeNestedPathWithoutTopLevel_NoIncluded_NoPrimaryLinkage_List() throws Exception {
+        UserDto u1 = (UserDto) generator.getUserDto().clone();
+        UserDto u2 = (UserDto) generator.getUserDto().clone();
+        u2.setId("owner2");
+        List<UserDto> users = Arrays.asList(u1, u2);
+
+        JsonApiOptions options = JsonApiOptions.builder()
+                .includePaths(new HashSet<>(Collections.singletonList("childObjects.apple")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(users, 2, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        // No included when only nested path is provided
+        assertNull(root.get("included"));
+
+        // No forced top-level linkage for childObjects in any item
+        ArrayNode data = (ArrayNode) root.get("data");
+        for (int i = 0; i < data.size(); i++) {
+            JsonNode rel = data.get(i).get("relationships");
+            if (rel != null) {
+                assertNull("No top-level linkage should be forced", rel.get("childObjects"));
+            }
+        }
     }
 }

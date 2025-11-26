@@ -9,6 +9,7 @@ import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -55,6 +56,7 @@ class DataParser {
         return data;
     }
 
+    // in DataParser.java
     ObjectNode parse(Object object, boolean asRelation, ObjectMapper mapper, JsonApiOptions options, boolean isPrimaryResource) {
         if (options == null) {
             return parse(object, asRelation, mapper);
@@ -92,12 +94,16 @@ class DataParser {
 
         if (isPrimaryResource) {
             Set<String> fromInclude = options.topLevelIncludeRelations();
-            if (!fromInclude.isEmpty()) {
+            if (fromInclude != null && !fromInclude.isEmpty()) {
                 if (allowed == null) {
                     allowed = new HashSet<>();
                 }
                 allowed.addAll(fromInclude);
             }
+        }
+
+        if (allowed == null) {
+            allowed = Collections.emptySet();
         }
 
         RelationshipParser relationshipParser = new RelationshipParser();

@@ -13,10 +13,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -38,8 +35,8 @@ public class IncludedTest {
 
     @Test
     public void testFieldsFiltersPrimaryRelationships_OnlyLinkage_NoIncluded_Single() throws Exception {
-        java.util.HashMap<String, java.util.Set<String>> fieldsByType = new java.util.HashMap<>();
-        fieldsByType.put("User", new java.util.HashSet<>(java.util.Arrays.asList("mainObject")));
+        HashMap<String, Set<String>> fieldsByType = new HashMap<>();
+        fieldsByType.put("User", new HashSet<>(Collections.singletonList("mainObject")));
         JsonApiOptions options = JsonApiOptions.builder()
                 .fieldsByType(fieldsByType)
                 .build();
@@ -57,7 +54,7 @@ public class IncludedTest {
     @Test
     public void testIncludeAddsPrimaryRelationshipLinkage_AndSideLoads_Single() throws Exception {
         JsonApiOptions options = JsonApiOptions.builder()
-                .includePaths(new java.util.HashSet<>(java.util.Arrays.asList("mainObject")))
+                .includePaths(new HashSet<>(Collections.singletonList("mainObject")))
                 .build();
 
         String jsonStr = JsonApiConverter.convert(userDto, 1, options);
@@ -84,11 +81,11 @@ public class IncludedTest {
 
     @Test
     public void testFieldsAndInclude_IncludeWins_RelationshipLinkageAndIncluded_Single() throws Exception {
-        java.util.HashMap<String, java.util.Set<String>> fieldsByType = new java.util.HashMap<>();
-        fieldsByType.put("User", new java.util.HashSet<>(java.util.Arrays.asList("mainObject")));
+        HashMap<String, Set<String>> fieldsByType = new HashMap<>();
+        fieldsByType.put("User", new HashSet<>(Collections.singletonList("mainObject")));
         JsonApiOptions options = JsonApiOptions.builder()
                 .fieldsByType(fieldsByType)
-                .includePaths(new java.util.HashSet<>(java.util.Arrays.asList("mainObject")))
+                .includePaths(new HashSet<>(Collections.singletonList("mainObject")))
                 .build();
 
         String jsonStr = JsonApiConverter.convert(userDto, 1, options);

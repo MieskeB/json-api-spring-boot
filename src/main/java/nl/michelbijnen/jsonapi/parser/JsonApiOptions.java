@@ -21,10 +21,6 @@ public class JsonApiOptions {
         return new Builder();
     }
 
-    public Map<String, Set<String>> getFieldsByType() {
-        return fieldsByType;
-    }
-
     public Set<String> getIncludePaths() {
         return includePaths;
     }
@@ -38,14 +34,14 @@ public class JsonApiOptions {
         return s == null ? Collections.emptySet() : s;
     }
 
-    // First segment per include path (top-level relations)
     public Set<String> topLevelIncludeRelations() {
         if (includePaths.isEmpty()) return Collections.emptySet();
         Set<String> top = new HashSet<>();
         for (String p : includePaths) {
             if (p == null || p.isEmpty()) continue;
-            int idx = p.indexOf('.');
-            top.add(idx < 0 ? p : p.substring(0, idx));
+            if (!p.contains(".")) {
+                top.add(p);
+            }
         }
         return top;
     }

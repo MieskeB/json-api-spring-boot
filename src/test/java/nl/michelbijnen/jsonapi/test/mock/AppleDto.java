@@ -4,7 +4,7 @@ import nl.michelbijnen.jsonapi.annotation.JsonApiObject;
 import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
 import nl.michelbijnen.jsonapi.generator.JsonApiDtoExtendable;
 
-@JsonApiObject("Object")
+@JsonApiObject("Apple")
 public class AppleDto extends JsonApiDtoExtendable implements Cloneable {
     @JsonApiProperty
     private String name;

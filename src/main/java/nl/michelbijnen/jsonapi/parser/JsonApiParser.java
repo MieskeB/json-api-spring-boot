@@ -31,7 +31,6 @@ class JsonApiParser {
         return parse(object, maxDepth, mapper, null);
     }
 
-    // NEW
     ObjectNode parse(Object object, int maxDepth, ObjectMapper mapper, JsonApiOptions options) {
         if (object == null) {
             ObjectNode nullObject = mapper.createObjectNode();
@@ -64,9 +63,8 @@ class JsonApiParser {
         }
         jsonObject.set("data", dataJsonArray);
 
-        // Only build included when no options (legacy) or includePaths is non-empty
         boolean shouldBuildIncluded = (options == null) ||
-                (options.getIncludePaths() != null && !options.getIncludePaths().isEmpty());
+                (options.topLevelIncludeRelations() != null && !options.topLevelIncludeRelations().isEmpty());
 
         if (shouldBuildIncluded) {
             ArrayNode includedJsonArray = mapper.createArrayNode();
@@ -88,9 +86,8 @@ class JsonApiParser {
         if (!parsedLinks.isEmpty())
             jsonObject.set("links", parsedLinks);
 
-        // Only build included when no options (legacy) or includePaths is non-empty
         boolean shouldBuildIncluded = (options == null) ||
-                (options.getIncludePaths() != null && !options.getIncludePaths().isEmpty());
+                (options.topLevelIncludeRelations() != null && !options.topLevelIncludeRelations().isEmpty());
 
         if (shouldBuildIncluded) {
             ArrayNode parsedIncluded = this.includedParser.parse(object, maxDepth, mapper, options);
