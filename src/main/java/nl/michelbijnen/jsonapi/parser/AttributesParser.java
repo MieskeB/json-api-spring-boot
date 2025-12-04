@@ -10,15 +10,26 @@ import java.lang.reflect.Field;
 class AttributesParser {
 
     /**
-     * This method should return all @JsonApiProperty annotated properties in one object
+     * Parses all fields annotated with {@link nl.michelbijnen.jsonapi.annotation.JsonApiProperty}
+     * from the given object into a JSON attributes node.
      *
-     * @param object the object to be converted
-     * @return the json of only the attributes
+     * @param object the source object to extract attributes from
+     * @param mapper the ObjectMapper used to create and populate the node
+     * @return an ObjectNode containing only the attributes of the object
      */
     ObjectNode parse(Object object, ObjectMapper mapper) {
         return parse(object, mapper, null);
     }
 
+    /**
+     * Parses attributes for the given object, honoring field filtering defined in {@link JsonApiOptions}.
+     * If options specify fields for the object's JSON:API type, only those fields are included.
+     *
+     * @param object  the source object to extract attributes from
+     * @param mapper  the ObjectMapper used to create and populate the node
+     * @param options optional parse options (it may be null) used for field filtering by type
+     * @return an ObjectNode containing the filtered attributes
+     */
     ObjectNode parse(Object object, ObjectMapper mapper, JsonApiOptions options) {
         ObjectNode jsonObject = mapper.createObjectNode();
 

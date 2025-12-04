@@ -12,6 +12,8 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import static nl.michelbijnen.jsonapi.util.JsonApiConstants.*;
+
 class RelationshipParser {
     private final DataParser dataParser;
     private final LinksParser linksParser;
@@ -22,19 +24,33 @@ class RelationshipParser {
     }
 
     /**
-     * This class should add the name of the object and under it the following items:
+     * Builds a JSON:API relationships object for the given domain object.
      * <p>
-     * links
-     * data
+     * Delegates to {@link #parse(Object, ObjectMapper, java.util.Set)} with {@code allowedRelationshipNames = null}.
      *
-     * @param object
-     * @return
+     * @param object the domain object whose relations are inspected
+     * @param mapper Jackson {@link com.fasterxml.jackson.databind.ObjectMapper} used to create nodes
+     * @return an {@link com.fasterxml.jackson.databind.node.ObjectNode} containing relationship entries; possibly empty
      */
     ObjectNode parse(Object object, ObjectMapper mapper) {
         return parse(object, mapper, null);
     }
 
-    // NEW
+    /**
+     * Builds a JSON:API relationships object for the given domain object, optionally filtering by relation name.
+     * <p>
+     * Behavior:
+     * - Iterates declared fields annotated with {@link nl.michelbijnen.jsonapi.annotation.JsonApiRelation}.
+     * - If {@code allowedRelationshipNames} is non-null, only relations whose annotation value is contained in the set are included.
+     * - Null relation values are skipped.
+     * - For collection relations, delegates to {@code parseRelationshipAsList}; otherwise to {@code parseRelationshipAsObject}.
+     * - Only non-empty relationship nodes are added under their relation name.
+     *
+     * @param object                   the domain object whose relations are inspected
+     * @param mapper                   Jackson {@link com.fasterxml.jackson.databind.ObjectMapper} used to create nodes
+     * @param allowedRelationshipNames optional whitelist of relation names to include; may be {@code null}
+     * @return an {@link com.fasterxml.jackson.databind.node.ObjectNode} mapping relation names to relationship objects; possibly empty
+     */
     ObjectNode parse(Object object, ObjectMapper mapper, Set<String> allowedRelationshipNames) {
         ObjectNode jsonObject = mapper.createObjectNode();
 
@@ -79,11 +95,11 @@ class RelationshipParser {
         }
         ObjectNode linksParsed = this.linksParser.parse(relationObject, mapper);
         if (!linksParsed.isEmpty())
-            relationship.set("links", linksParsed);
+            relationship.set(LINKS, linksParsed);
 
         ObjectNode dataParsed = this.dataParser.parse(relationObject, true, mapper);
         if (!dataParsed.isEmpty())
-            relationship.set("data", dataParsed);
+            relationship.set(DATA, dataParsed);
 
         return relationship;
     }
@@ -91,11 +107,12 @@ class RelationshipParser {
     private ObjectNode parseRelationshipAsList(Object object, Field field, ObjectMapper mapper) {
         ObjectNode relationship = mapper.createObjectNode();
 
-        Collection<Object> relationObjectCollection = (Collection<Object>) GetterAndSetter.callGetter(object, field.getName());
+        Collection<Object> relationObjectCollection = (Collection<Object>) GetterAndSetter
+                .callGetter(object, field.getName());
 
         ObjectNode linksParsed = this.linksParser.parse(relationObjectCollection, mapper);
         if (!linksParsed.isEmpty())
-            relationship.set("links", linksParsed);
+            relationship.set(LINKS, linksParsed);
 
         ArrayNode dataForEach = mapper.createArrayNode();
         for (Object relationObject : relationObjectCollection) {
@@ -105,16 +122,16 @@ class RelationshipParser {
             }
         }
         if (!dataForEach.isEmpty())
-            relationship.set("data", dataForEach);
+            relationship.set(DATA, dataForEach);
 
         return relationship;
     }
 
     private boolean dataExistsInArray(ArrayNode dataArray, ObjectNode newData) {
-        String id = newData.get("id").asText();
-        String type = newData.get("type").asText();
+        String id = newData.get(ID).asText();
+        String type = newData.get(TYPE).asText();
         for (JsonNode existing : dataArray) {
-            if (existing.get("id").asText().equals(id) && existing.get("type").asText().equals(type)) {
+            if (existing.get(ID).asText().equals(id) && existing.get(TYPE).asText().equals(type)) {
                 return true;
             }
         }

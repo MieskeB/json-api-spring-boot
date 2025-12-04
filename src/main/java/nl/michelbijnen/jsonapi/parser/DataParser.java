@@ -14,29 +14,37 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static nl.michelbijnen.jsonapi.util.JsonApiConstants.*;
+
 class DataParser {
 
     /**
-     * This method should return a jsonobject with the following properties:
-     * type
-     * id
-     * attributes
-     * relationships
-     * <p>
-     * As a relation, this should only return type and id
+     * Parses the given object into a JSON:API data node.
+     * Populates type, id, and (if present) attributes and relationships.
      *
-     * @param object The object to be converted to data
-     * @return a json object with the object's data
+     * @param object the object to parse
+     * @param mapper the ObjectMapper used to construct result nodes
+     * @return an ObjectNode representing the object's JSON:API data
      */
     ObjectNode parse(Object object, ObjectMapper mapper) {
         return this.parse(object, false, mapper);
     }
 
+    /**
+     * Parses the given object into a JSON:API data node, optionally as a relation.
+     * When {@code asRelation} is true, only {@code type} and {@code id} are included.
+     * Otherwise, attributes and relationships are also populated.
+     *
+     * @param object     the object to parse
+     * @param asRelation whether to emit only a relationship identifier object (type, id)
+     * @param mapper     the ObjectMapper used to construct result nodes
+     * @return an ObjectNode representing the object's JSON:API data
+     */
     ObjectNode parse(Object object, boolean asRelation, ObjectMapper mapper) {
         ObjectNode data = mapper.createObjectNode();
 
-        data.put("type", this.getType(object));
-        data.put("id", this.getId(object));
+        data.put(TYPE, this.getType(object));
+        data.put(ID, this.getId(object));
 
         if (asRelation) {
             return data;
@@ -45,43 +53,50 @@ class DataParser {
         AttributesParser attributesParser = new AttributesParser();
         ObjectNode attributes = attributesParser.parse(object, mapper);
         if (!attributes.isEmpty()) {
-            data.set("attributes", attributes);
+            data.set(ATTRIBUTES, attributes);
         }
 
         RelationshipParser relationshipParser = new RelationshipParser();
         ObjectNode parsedRelationships = relationshipParser.parse(object, mapper);
         if (!parsedRelationships.isEmpty())
-            data.set("relationships", parsedRelationships);
+            data.set(RELATIONSHIPS, parsedRelationships);
 
         return data;
     }
 
-    // in DataParser.java
-    ObjectNode parse(Object object, boolean asRelation, ObjectMapper mapper, JsonApiOptions options, boolean isPrimaryResource) {
+    /**
+     * Parses the given object into a JSON:API data node with options, optionally as a relation.
+     * - Attributes are filtered using {@link JsonApiOptions} fields by type (if provided).
+     * - Relationships are limited to those allowed by field filtering
+     * also include top-level include relations from {@link JsonApiOptions#topLevelIncludeRelations()}.
+     *
+     * @param object  the object to parse
+     * @param mapper  the ObjectMapper used to construct result nodes
+     * @param options parse options (it may be null) for field and include filtering
+     * @return an ObjectNode representing the object's JSON:API data
+     */
+    ObjectNode parse(Object object, ObjectMapper mapper, JsonApiOptions options) {
         if (options == null) {
-            return parse(object, asRelation, mapper);
+            return parse(object, false, mapper);
         }
 
         ObjectNode data = mapper.createObjectNode();
 
         String type = this.getType(object);
-        data.put("type", type);
-        data.put("id", this.getId(object));
-
-        if (asRelation) {
-            return data;
-        }
+        data.put(TYPE, type);
+        data.put(ID, this.getId(object));
 
         AttributesParser attributesParser = new AttributesParser();
         ObjectNode attributes = attributesParser.parse(object, mapper, options);
         if (!attributes.isEmpty()) {
-            data.set("attributes", attributes);
+            data.set(ATTRIBUTES, attributes);
         }
 
         Set<String> allowed = null;
         Set<String> actualRelNames = new HashSet<>();
         for (Field f : object.getClass().getDeclaredFields()) {
-            nl.michelbijnen.jsonapi.annotation.JsonApiRelation ann = f.getAnnotation(nl.michelbijnen.jsonapi.annotation.JsonApiRelation.class);
+            nl.michelbijnen.jsonapi.annotation.JsonApiRelation ann =
+                    f.getAnnotation(nl.michelbijnen.jsonapi.annotation.JsonApiRelation.class);
             if (ann != null) {
                 actualRelNames.add(ann.value());
             }
@@ -92,14 +107,12 @@ class DataParser {
             allowed = fromFields;
         }
 
-        if (isPrimaryResource) {
-            Set<String> fromInclude = options.topLevelIncludeRelations();
-            if (fromInclude != null && !fromInclude.isEmpty()) {
-                if (allowed == null) {
-                    allowed = new HashSet<>();
-                }
-                allowed.addAll(fromInclude);
+        Set<String> fromInclude = options.topLevelIncludeRelations();
+        if (fromInclude != null && !fromInclude.isEmpty()) {
+            if (allowed == null) {
+                allowed = new HashSet<>();
             }
+            allowed.addAll(fromInclude);
         }
 
         if (allowed == null) {
@@ -109,7 +122,7 @@ class DataParser {
         RelationshipParser relationshipParser = new RelationshipParser();
         ObjectNode parsedRelationships = relationshipParser.parse(object, mapper, allowed);
         if (!parsedRelationships.isEmpty())
-            data.set("relationships", parsedRelationships);
+            data.set(RELATIONSHIPS, parsedRelationships);
 
         return data;
     }
@@ -118,16 +131,17 @@ class DataParser {
         if (object.getClass().getAnnotation(JsonApiObject.class) != null) {
             return object.getClass().getAnnotation(JsonApiObject.class).value();
         }
-        throw new JsonApiException("@JsonApiObject(\"<classname>\") missing");
+        throw new JsonApiException(JSON_API_OBJECT_MISSING);
     }
 
     private String getId(Object object) {
-        Field[] allFields = Stream.concat(Arrays.stream(object.getClass().getDeclaredFields()), Arrays.stream(object.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
+        Field[] allFields = Stream.concat(Arrays.stream(object.getClass().getDeclaredFields()),
+                Arrays.stream(object.getClass().getSuperclass().getDeclaredFields())).toArray(Field[]::new);
         for (Field field : allFields) {
             if (field.isAnnotationPresent(JsonApiId.class)) {
                 return GetterAndSetter.callGetter(object, field.getName()).toString();
             }
         }
-        throw new JsonApiException("No field with @JsonApiId is found");
+        throw new JsonApiException(JSON_API_ID_MISSING);
     }
 }
