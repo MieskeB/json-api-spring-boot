@@ -24,6 +24,14 @@ public class JsonApiOptions {
     }
 
     /**
+     * Get fields by type.
+     * @return fields by type
+     */
+    public Map<String, Set<String>> getFieldsByType() {
+        return fieldsByType;
+    }
+
+    /**
      * Checks whether a sparse fieldset is configured for the given JSON:API type.
      *
      * @param type the resource type (it may be {@code null})
@@ -72,7 +80,17 @@ public class JsonApiOptions {
         private Set<String> includePaths;
 
         public Builder fieldsByType(Map<String, Set<String>> fieldsByType) {
-            this.fieldsByType = fieldsByType;
+            Map<String, Set<String>> normalized = new HashMap<>();
+            if (fieldsByType != null) {
+                for (Map.Entry<String, Set<String>> e : fieldsByType.entrySet()) {
+                    String key = e.getKey();
+                    if (key.startsWith("fields[") && key.endsWith("]")) {
+                        key = key.substring(7, key.length() - 1);
+                    }
+                    normalized.put(key, e.getValue() == null ? Collections.emptySet() : new HashSet<>(e.getValue()));
+                }
+            }
+            this.fieldsByType = normalized;
             return this;
         }
 
