@@ -396,7 +396,6 @@ public class FieldsAndIncludeTest {
                 .includePaths(new HashSet<>()).build();
         String result = JsonApiConverter.convert(dto, jsonApiOptions);
         JsonNode json = mapper.readTree(result);
-        System.out.println(result);
 
         // Should include all attributes, no relationships
         assertTrue(json.has("data"));
@@ -415,7 +414,6 @@ public class FieldsAndIncludeTest {
                 .includePaths(includes).build();
         String result = JsonApiConverter.convert(dto, jsonApiOptions);
         JsonNode json = mapper.readTree(result);
-        System.out.println(result);
 
         // Should include relationship in relationships and no fields in included
         assertTrue(json.get("data").has("relationships"));
@@ -440,7 +438,6 @@ public class FieldsAndIncludeTest {
                 .includePaths(includes).build();
         String result = JsonApiConverter.convert(dto, jsonApiOptions);
         JsonNode json = mapper.readTree(result);
-        System.out.println(result);
 
         // Should include only name attribute, no relationships
         assertTrue(json.get("data").get("attributes").has("name"));
@@ -458,7 +455,6 @@ public class FieldsAndIncludeTest {
                 .includePaths(includes).build();
         String result = JsonApiConverter.convert(dto, jsonApiOptions);
         JsonNode json = mapper.readTree(result);
-        System.out.println(result);
 
         // Should include owner in relationships with id/type, but not in included
         assertTrue(json.get("data").has("relationships"));
@@ -479,7 +475,6 @@ public class FieldsAndIncludeTest {
                 .includePaths(includes).build();
         String result = JsonApiConverter.convert(dto, jsonApiOptions);
         JsonNode json = mapper.readTree(result);
-        System.out.println(result);
 
         // Should include childObjects in relationships with ids/types
         assertTrue(json.get("data").has("relationships"));
