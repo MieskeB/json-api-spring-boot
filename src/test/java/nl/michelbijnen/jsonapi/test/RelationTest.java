@@ -19,73 +19,73 @@ public class RelationTest {
 
     private MockDataGenerator generator;
 
-    private ObjectDto object;
-    private UserDto user;
+    private ObjectDto objectDto;
+    private UserDto userDto;
     private ObjectMapper mapper;
 
     @Before
     public void before() throws CloneNotSupportedException {
         this.generator = MockDataGenerator.getInstance();
-        this.object = (ObjectDto) generator.getObjectDto().clone();
-        this.user = (UserDto) generator.getUserDto().clone();
+        this.objectDto = (ObjectDto) generator.getObjectDto().clone();
+        this.userDto = (UserDto) generator.getUserDto().clone();
         this.mapper = new ObjectMapper();
     }
 
     @Test
     public void testIfRelationshipExists() throws Exception {
-        JsonNode json = mapper.readTree(JsonApiConverter.convert(object));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
         assertNotNull(json.get("data").get("relationships"));
     }
 
     @Test
     public void testIfRelationshipCanBeNull() throws Exception {
-        object.setOwner(null);
-        JsonNode json = mapper.readTree(JsonApiConverter.convert(object));
+        objectDto.setOwner(null);
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
         assertNull(json.get("data").get("relationships").get("owner"));
-        object = this.generator.getObjectDto();
+        objectDto = this.generator.getObjectDto();
     }
 
     @Test
     public void testIfRelationshipOwnerExists() throws Exception {
-        JsonNode json = mapper.readTree(JsonApiConverter.convert(object));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
         assertNotNull(json.get("data").get("relationships").get("owner"));
     }
 
     @Test
     public void testIfRelationshipOwnerDataExists() throws Exception {
-        JsonNode json = mapper.readTree(JsonApiConverter.convert(object));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
         assertNotNull(json.get("data").get("relationships").get("owner").get("data"));
     }
 
     @Test
     public void testIfRelationshipOwnerDataIdWorks() throws Exception {
-        JsonNode json = mapper.readTree(JsonApiConverter.convert(object));
-        assertEquals(object.getOwner().getId(), json.get("data").get("relationships").get("owner").get("data").get("id").asText());
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals(objectDto.getOwner().getId(), json.get("data").get("relationships").get("owner").get("data").get("id").asText());
     }
 
     @Test
     public void testIfRelationshipOwnerDataTypeWorks() throws Exception {
-        JsonNode json = mapper.readTree(JsonApiConverter.convert(object));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
         assertEquals("User", json.get("data").get("relationships").get("owner").get("data").get("type").asText());
     }
 
     @Test
     public void testIfRelationshipOwnerLinksExists() throws Exception {
-        JsonNode json = mapper.readTree(JsonApiConverter.convert(object));
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
         assertNotNull(json.get("data").get("relationships").get("owner").get("links"));
     }
 
     @Test
     public void testIfRelationshipOwnerLinksSelfWorks() throws Exception {
-        JsonNode json = mapper.readTree(JsonApiConverter.convert(object));
-        assertEquals("http://localhost:8080/user/" + object.getOwner().getId(), json.get("data").get("relationships").get("owner").get("links").get("self").asText());
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals("http://localhost:8080/user/" + objectDto.getOwner().getId(), json.get("data").get("relationships").get("owner").get("links").get("self").asText());
     }
 
     @Test
     @Ignore("Planned for future update")
     public void testIfRelationshipOwnerLinksRelatedWorks() throws Exception {
-        JsonNode json = mapper.readTree(JsonApiConverter.convert(object));
-        assertEquals("http://localhost:8080/object/" + object.getId() + "/user/" + object.getOwner().getId(), json.get("data").get("relationships").get("owner").get("links").get("related").asText());
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(objectDto));
+        assertEquals("http://localhost:8080/object/" + objectDto.getId() + "/user/" + objectDto.getOwner().getId(), json.get("data").get("relationships").get("owner").get("links").get("related").asText());
     }
 
     @Test

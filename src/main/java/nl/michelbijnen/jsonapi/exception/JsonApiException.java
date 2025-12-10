@@ -10,4 +10,14 @@ public class JsonApiException extends RuntimeException {
     public JsonApiException(String message) {
         super(message);
     }
+
+    /**
+     * Constructs a new JsonApiException with the specified detail message and cause.
+     *
+     * @param message the detail message
+     * @param cause   the cause
+     */
+    public JsonApiException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

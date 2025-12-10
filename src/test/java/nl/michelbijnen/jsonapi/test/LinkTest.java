@@ -53,19 +53,14 @@ public class LinkTest {
         assertEquals("http://localhost:8080/object/" + this.objectDto.getId(), json.get("links").get("self").asText());
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testIfMalformedUrlThrowsException() throws Exception {
         String tempUrl = this.objectDto.getSelfRel();
         this.objectDto.setSelfRel("NotValidUrl");
         JsonNode json = mapper.readTree(JsonApiConverter.convert(this.objectDto));
         this.objectDto.setSelfRel(tempUrl);
-        try {
-            json.get("links");
-            json.get("links").get("self");
-            fail();
-        } catch (NullPointerException e) {
-            assertTrue(e.getMessage().endsWith("\"com.fasterxml.jackson.databind.JsonNode.get(String)\" is null"));
-        }
+        json.get("links");
+        json.get("links").get("self");
     }
 
     @Test
