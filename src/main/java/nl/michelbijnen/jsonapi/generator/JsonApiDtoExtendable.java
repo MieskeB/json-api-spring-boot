@@ -5,6 +5,8 @@ import nl.michelbijnen.jsonapi.annotation.JsonApiLink;
 import nl.michelbijnen.jsonapi.enumeration.JsonApiLinkType;
 import nl.michelbijnen.jsonapi.exception.JsonApiException;
 
+import static nl.michelbijnen.jsonapi.util.JsonApiConstants.*;
+
 public abstract class JsonApiDtoExtendable {
     @JsonApiId
     private String id;
@@ -36,27 +38,27 @@ public abstract class JsonApiDtoExtendable {
      */
     public void generate(String self, String all) {
         if (this.id == null || this.id.isEmpty()) {
-            throw new JsonApiException("Id not entered");
+            throw new JsonApiException(ID_NOT_ENTERED);
         }
 
-        String baseUrl = System.getProperty("jsonapi.baseUrl", "http://localhost:8080");
+        String baseUrl = System.getProperty(JSON_API_BASE_URL_PROPERTY, JSON_API_BASE_URL_DEFAULT_VALUE);
 
         // check if trailing / baseUrl
-        if (baseUrl.endsWith("/")) {
+        if (baseUrl.endsWith(SLASH)) {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
 
         // check if / before self and all
-        if (!self.startsWith("/")) {
-            self = "/" + self;
+        if (!self.startsWith(SLASH)) {
+            self = SLASH + self;
         }
-        if (!all.startsWith("/")) {
-            all = "/" + all;
+        if (!all.startsWith(SLASH)) {
+            all = SLASH + all;
         }
 
         // check if / after self
-        if (!self.endsWith("/")) {
-            self = self + "/";
+        if (!self.endsWith(SLASH)) {
+            self = self + SLASH;
         }
 
         this.selfRel = baseUrl + self + id;

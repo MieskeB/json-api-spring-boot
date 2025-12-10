@@ -1,24 +1,62 @@
 package nl.michelbijnen.jsonapi.parser;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.michelbijnen.jsonapi.annotation.JsonApiProperty;
 import nl.michelbijnen.jsonapi.helper.GetterAndSetter;
-import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 
 class AttributesParser {
 
     /**
-     * This method should return all @JsonApiProperty annotated properties in one object
+     * Parses all fields annotated with {@link nl.michelbijnen.jsonapi.annotation.JsonApiProperty}
+     * from the given object into a JSON attributes node.
      *
-     * @param object the object to be converted
-     * @return the json of only the attributes
+     * @param object the source object to extract attributes from
+     * @param mapper the ObjectMapper used to create and populate the node
+     * @return an ObjectNode containing only the attributes of the object
      */
-    JSONObject parse(Object object) {
-        JSONObject jsonObject = new JSONObject();
+    ObjectNode parse(Object object, ObjectMapper mapper) {
+        return parse(object, mapper, null);
+    }
+
+    /**
+     * Parses attributes for the given object, honoring field filtering defined in {@link JsonApiOptions}.
+     * If options specify fields for the object's JSON:API type, only those fields are included.
+     *
+     * @param object  the source object to extract attributes from
+     * @param mapper  the ObjectMapper used to create and populate the node
+     * @param options optional parse options (it may be null) used for field filtering by type
+     * @return an ObjectNode containing the filtered attributes
+     */
+    ObjectNode parse(Object object, ObjectMapper mapper, JsonApiOptions options) {
+        ObjectNode jsonObject = mapper.createObjectNode();
+
+        if (options != null && options.getFieldsByType().isEmpty()
+                && options.getFieldInclusionMode() == JsonApiOptions.AttributesInclusionMode.EXCLUDE_ALL) {
+            return jsonObject;
+        }
+
+        String type = null;
+        if (options != null) {
+            nl.michelbijnen.jsonapi.annotation.JsonApiObject ann =
+                    object.getClass().getAnnotation(nl.michelbijnen.jsonapi.annotation.JsonApiObject.class);
+            if (ann != null) type = ann.value();
+        }
+
         for (Field field : object.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(JsonApiProperty.class)) {
-                jsonObject.put(field.getName(), GetterAndSetter.callGetter(object, field.getName()));
+            if (!field.isAnnotationPresent(JsonApiProperty.class)) continue;
+
+            if (options != null && type != null && options.hasFieldsForType(type)) {
+                if (!options.fieldsForType(type).contains(field.getName())) {
+                    continue;
+                }
+            }
+
+            Object value = GetterAndSetter.callGetter(object, field.getName());
+            if (value != null) {
+                jsonObject.set(field.getName(), mapper.valueToTree(value));
             }
         }
         return jsonObject;

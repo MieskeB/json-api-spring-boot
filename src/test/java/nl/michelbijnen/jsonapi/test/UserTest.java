@@ -1,9 +1,10 @@
 package nl.michelbijnen.jsonapi.test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
 import nl.michelbijnen.jsonapi.test.mock.UserDto;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,40 +16,43 @@ import static org.junit.Assert.assertNotNull;
 public class UserTest {
 
     private UserDto userDto;
+    private ObjectMapper mapper;
 
     @Before
     public void before() throws CloneNotSupportedException {
         MockDataGenerator generator = MockDataGenerator.getInstance();
         this.userDto = (UserDto) generator.getUserDto().clone();
+        this.mapper = new ObjectMapper();
     }
 
     @Test
-    public void testIfLinksExists() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-        assertNotNull(jsonObject.getJSONObject("links"));
+    public void testIfLinksExists() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        assertNotNull(json.get("links"));
     }
 
     @Test
-    public void testIfDataExists() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-        assertNotNull(jsonObject.getJSONObject("data"));
+    public void testIfDataExists() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        assertNotNull(json.get("data"));
     }
 
     @Test
-    public void testIfDataContainsId() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-        assertEquals(userDto.getId(), jsonObject.getJSONObject("data").getString("id"));
+    public void testIfDataContainsId() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        assertEquals(userDto.getId(), json.get("data").get("id").asText());
     }
 
     @Test
-    public void testIfDataContainsType() {
-        JSONObject jsonObject = new JSONObject(JsonApiConverter.convert(userDto));
-        assertEquals("User", jsonObject.getJSONObject("data").getString("type"));
+    public void testIfDataContainsType() throws Exception {
+        JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
+        assertEquals("User", json.get("data").get("type").asText());
     }
 
     @Test
-    public void testIfEmptyArrayWillWork() {
+    public void testIfEmptyArrayWillWork() throws Exception {
         String result = JsonApiConverter.convert(new ArrayList<>());
-        assertEquals("{\"data\":[]}", result);
+        JsonNode json = mapper.readTree(result);
+        assertEquals("[]", json.get("data").toString());
     }
 }

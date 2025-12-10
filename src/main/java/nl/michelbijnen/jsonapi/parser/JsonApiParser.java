@@ -1,14 +1,17 @@
 package nl.michelbijnen.jsonapi.parser;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.Collection;
 
-class JsonApiParser {
-    private LinksParser linksParser;
-    private DataParser dataParser;
-    private IncludedParser includedParser;
+import static nl.michelbijnen.jsonapi.util.JsonApiConstants.*;
+
+public class JsonApiParser {
+    private final LinksParser linksParser;
+    private final DataParser dataParser;
+    private final IncludedParser includedParser;
 
     JsonApiParser() {
         this.linksParser = new LinksParser();
@@ -17,70 +20,97 @@ class JsonApiParser {
     }
 
     /**
-     * This method should combine three things:
-     * Data
-     * Links
-     * Included
+     * Parses the given object into a JSON:API document node using the specified depth.
+     * <p>
+     * Delegates to {@link #parse(Object, int, ObjectMapper, JsonApiOptions)} with {@code options = null}.
      *
-     * @param object   the object to be converted
-     * @param maxDepth the depth of the models to return
-     * @return The converted json
+     * @param object   the object (or collection) to parse
+     * @param maxDepth maximum relation traversal depth
+     * @param mapper   Jackson {@link ObjectMapper} used to build nodes
+     * @return the JSON:API document as an {@link ObjectNode}
      */
-    JSONObject parse(Object object, int maxDepth) {
+    public ObjectNode parse(Object object, int maxDepth, ObjectMapper mapper) {
+        return parse(object, maxDepth, mapper, null);
+    }
+
+    /**
+     * Parses the given object into a JSON:API document node with optional parsing options.
+     * <p>
+     * Behavior:
+     * - If {@code object} is {@code null}, returns a document with an empty {@code data} object.
+     * - If {@code object} is a collection, serializes it as a JSON:API array document.
+     * - Otherwise, serializes it as a single-resource document.
+     * - Honors {@code maxDepth} for relation traversal and applies any {@link JsonApiOptions}.
+     *
+     * @param object   the object (or collection) to parse; may be {@code null}
+     * @param maxDepth maximum relation traversal depth
+     * @param mapper   Jackson {@link ObjectMapper} used to build nodes
+     * @param options  parsing options (e.g., sparse fieldsets, include paths); may be {@code null}
+     * @return the JSON:API document as an {@link ObjectNode}
+     */
+    public ObjectNode parse(Object object, int maxDepth, ObjectMapper mapper, JsonApiOptions options) {
         if (object == null) {
-            JSONObject nullObject = new JSONObject();
-            nullObject.put("data", new JSONObject());
+            ObjectNode nullObject = mapper.createObjectNode();
+            nullObject.set(DATA, mapper.createObjectNode());
             return nullObject;
         }
         if (this.isList(object)) {
-            return this.convertObjectAsList(object, maxDepth);
+            return this.convertObjectAsList(object, maxDepth, mapper, options);
         } else {
-            return this.convertObjectAsObject(object, maxDepth);
+            return this.convertObjectAsObject(object, maxDepth, mapper, options);
         }
     }
 
-    private JSONObject convertObjectAsList(Object object, int maxDepth) {
-        JSONObject jsonObject = new JSONObject();
+    private ObjectNode convertObjectAsList(Object object, int maxDepth, ObjectMapper mapper, JsonApiOptions options) {
+        ObjectNode jsonObject = mapper.createObjectNode();
 
-        if (((Collection<Object>) object).size() == 0) {
-            jsonObject.put("data", new JSONArray());
+        if (((Collection<Object>) object).isEmpty()) {
+            jsonObject.set(DATA, mapper.createArrayNode());
             return jsonObject;
         }
 
-        JSONObject parsedLinks = this.linksParser.parse(object);
+        ObjectNode parsedLinks = this.linksParser.parse(object, mapper);
         if (!parsedLinks.isEmpty()) {
-            jsonObject.put("links", parsedLinks);
+            jsonObject.set(LINKS, parsedLinks);
         }
 
-        JSONArray dataJsonArray = new JSONArray();
+        ArrayNode dataJsonArray = mapper.createArrayNode();
         for (Object loopObject : (Collection<Object>) object) {
-            dataJsonArray.put(this.dataParser.parse(loopObject));
+            dataJsonArray.add(this.dataParser.parse(loopObject, mapper, options));
         }
-        jsonObject.put("data", dataJsonArray);
+        jsonObject.set(DATA, dataJsonArray);
 
-        JSONArray includedJsonArray = new JSONArray();
-        for (Object loopObject : (Collection<Object>) object) {
-            for (Object includedObject : this.includedParser.parse(loopObject, maxDepth)) {
-                includedJsonArray.put(includedObject);
+        boolean shouldBuildIncluded = (options == null) ||
+                (options.topLevelIncludeRelations() != null && !options.topLevelIncludeRelations().isEmpty());
+
+        if (shouldBuildIncluded) {
+            ArrayNode includedJsonArray = mapper.createArrayNode();
+            for (Object loopObject : (Collection<Object>) object) {
+                this.includedParser.parse(loopObject, includedJsonArray, maxDepth, 0, mapper, options);
             }
+            if (!includedJsonArray.isEmpty())
+                jsonObject.set(INCLUDED, includedJsonArray);
         }
-        if (includedJsonArray.length() != 0)
-            jsonObject.put("included", includedJsonArray);
 
         return jsonObject;
     }
 
-    private JSONObject convertObjectAsObject(Object object, int maxDepth) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("data", this.dataParser.parse(object));
+    private ObjectNode convertObjectAsObject(Object object, int maxDepth, ObjectMapper mapper, JsonApiOptions options) {
+        ObjectNode jsonObject = mapper.createObjectNode();
+        jsonObject.set(DATA, this.dataParser.parse(object, mapper, options));
 
-        JSONObject parsedLinks = this.linksParser.parse(object);
+        ObjectNode parsedLinks = this.linksParser.parse(object, mapper);
         if (!parsedLinks.isEmpty())
-            jsonObject.put("links", parsedLinks);
+            jsonObject.set(LINKS, parsedLinks);
 
-        JSONArray parsedIncluded = this.includedParser.parse(object, maxDepth);
-        if (parsedIncluded.length() != 0)
-            jsonObject.put("included", parsedIncluded);
+        boolean shouldBuildIncluded = (options == null) ||
+                (options.topLevelIncludeRelations() != null && !options.topLevelIncludeRelations().isEmpty());
+
+        if (shouldBuildIncluded) {
+            ArrayNode parsedIncluded = this.includedParser.parse(object, maxDepth, mapper, options);
+            if (!parsedIncluded.isEmpty())
+                jsonObject.set(INCLUDED, parsedIncluded);
+        }
 
         return jsonObject;
     }
