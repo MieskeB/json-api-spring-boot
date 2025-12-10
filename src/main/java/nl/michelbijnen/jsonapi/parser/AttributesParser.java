@@ -33,7 +33,8 @@ class AttributesParser {
     ObjectNode parse(Object object, ObjectMapper mapper, JsonApiOptions options) {
         ObjectNode jsonObject = mapper.createObjectNode();
 
-        if (options != null && options.getFieldsByType().isEmpty()) {
+        if (options != null && options.getFieldsByType().isEmpty()
+                && options.getFieldInclusionMode() == JsonApiOptions.AttributesInclusionMode.EXCLUDE_ALL) {
             return jsonObject;
         }
 

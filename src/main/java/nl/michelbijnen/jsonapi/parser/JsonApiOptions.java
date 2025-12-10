@@ -5,8 +5,15 @@ import java.util.*;
 import static nl.michelbijnen.jsonapi.util.JsonApiConstants.DOT;
 
 public class JsonApiOptions {
+
+    public enum AttributesInclusionMode {
+        EXCLUDE_ALL,
+        INCLUDE_ALL
+    }
+
     private final Map<String, Set<String>> fieldsByType;
     private final Set<String> includePaths;
+    private final AttributesInclusionMode attributesInclusionMode;
 
     private JsonApiOptions(Builder b) {
         Map<String, Set<String>> fbt = new HashMap<>();
@@ -17,6 +24,7 @@ public class JsonApiOptions {
         }
         this.fieldsByType = Collections.unmodifiableMap(fbt);
         this.includePaths = b.includePaths == null ? Collections.emptySet() : Collections.unmodifiableSet(new HashSet<>(b.includePaths));
+        this.attributesInclusionMode = b.attributesInclusionMode == null ? AttributesInclusionMode.EXCLUDE_ALL : b.attributesInclusionMode;
     }
 
     public static Builder builder() {
@@ -29,6 +37,14 @@ public class JsonApiOptions {
      */
     public Map<String, Set<String>> getFieldsByType() {
         return fieldsByType;
+    }
+
+    /**
+     * Get fields Inclusion mode.
+     * @return Field Inclusion mode
+     */
+    public AttributesInclusionMode getFieldInclusionMode() {
+        return attributesInclusionMode;
     }
 
     /**
@@ -78,6 +94,7 @@ public class JsonApiOptions {
     public static class Builder {
         private Map<String, Set<String>> fieldsByType;
         private Set<String> includePaths;
+        private AttributesInclusionMode attributesInclusionMode;
 
         public Builder fieldsByType(Map<String, Set<String>> fieldsByType) {
             Map<String, Set<String>> normalized = new HashMap<>();
@@ -96,6 +113,11 @@ public class JsonApiOptions {
 
         public Builder includePaths(Set<String> includePaths) {
             this.includePaths = includePaths;
+            return this;
+        }
+
+        public Builder fieldInclusionMode(AttributesInclusionMode attributesInclusionMode) {
+            this.attributesInclusionMode = attributesInclusionMode;
             return this;
         }
 

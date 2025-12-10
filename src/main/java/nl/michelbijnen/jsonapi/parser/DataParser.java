@@ -105,6 +105,8 @@ class DataParser {
             Set<String> fromFields = new HashSet<>(options.fieldsForType(type));
             fromFields.retainAll(actualRelNames);
             allowed = fromFields;
+        } else if (options.getFieldInclusionMode() == JsonApiOptions.AttributesInclusionMode.INCLUDE_ALL) {
+            allowed = new HashSet<>(actualRelNames);
         }
 
         Set<String> fromInclude = options.topLevelIncludeRelations();

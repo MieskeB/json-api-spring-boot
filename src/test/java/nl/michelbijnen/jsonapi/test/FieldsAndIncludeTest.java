@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import nl.michelbijnen.jsonapi.parser.JsonApiConverter;
 import nl.michelbijnen.jsonapi.parser.JsonApiOptions;
 import nl.michelbijnen.jsonapi.test.mock.MockDataGenerator;
+import nl.michelbijnen.jsonapi.test.mock.ObjectDto;
 import nl.michelbijnen.jsonapi.test.mock.UserDto;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,11 +20,13 @@ public class FieldsAndIncludeTest {
     private final MockDataGenerator generator = MockDataGenerator.getInstance();
     private ObjectMapper mapper;
     private UserDto user;
+    private ObjectDto object;
 
     @Before
     public void setUp() throws Exception {
         this.mapper = new ObjectMapper();
         this.user = (UserDto) generator.getUserDto().clone();
+        this.object = (ObjectDto) generator.getObjectDto().clone();
     }
 
     // fields[User]=mainObject
@@ -381,5 +384,216 @@ public class FieldsAndIncludeTest {
         JsonNode attrs = found.get("attributes");
         assertNotNull(attrs);
         assertNotNull(attrs.get("name"));
+    }
+
+    @Test
+    public void testShouldIncludeAllAttributesAndNoRelationships() throws Exception {
+        ObjectDto dto = (ObjectDto) object.clone();
+        Map<String, Set<String>> fieldsMap = new HashMap<>();
+        fieldsMap.put("Object", new HashSet<>(Collections.singletonList("name")));
+        JsonApiOptions jsonApiOptions = JsonApiOptions.builder()
+                .fieldsByType(fieldsMap)
+                .includePaths(new HashSet<>()).build();
+        String result = JsonApiConverter.convert(dto, jsonApiOptions);
+        JsonNode json = mapper.readTree(result);
+        System.out.println(result);
+
+        // Should include all attributes, no relationships
+        assertTrue(json.has("data"));
+        JsonNode data = json.get("data");
+        assertEquals("Object", data.get("type").asText());
+        assertTrue(data.get("attributes").has("name"));
+        assertFalse(data.has("relationships"));
+        assertFalse(json.has("included"));
+    }
+
+    @Test
+    public void testShouldIncludeRelationshipInRelationshipsAndNoFieldsInIncluded() throws Exception {
+        ObjectDto dto = (ObjectDto) object.clone();
+        Set<String> includes = new HashSet<>(Collections.singletonList("owner"));
+        JsonApiOptions jsonApiOptions = JsonApiOptions.builder()
+                .includePaths(includes).build();
+        String result = JsonApiConverter.convert(dto, jsonApiOptions);
+        JsonNode json = mapper.readTree(result);
+        System.out.println(result);
+
+        // Should include relationship in relationships and no fields in included
+        assertTrue(json.get("data").has("relationships"));
+        JsonNode rel = json.get("data").get("relationships").get("owner");
+        assertEquals(dto.getOwner().getId(), rel.get("data").get("id").asText());
+        assertEquals("User", rel.get("data").get("type").asText());
+        assertTrue(json.has("included"));
+        assertEquals(1, json.get("included").size());
+        JsonNode included = json.get("included").get(0);
+        assertEquals(dto.getOwner().getId(), included.get("id").asText());
+        assertNull(included.get("attributes"));
+    }
+
+    @Test
+    public void testShouldIncludeOnlySpecifiedAttributesAndNoRelationships() throws Exception {
+        ObjectDto dto = (ObjectDto) object.clone();
+        Map<String, Set<String>> fields = new HashMap<>();
+        fields.put("Object", new HashSet<>(Collections.singletonList("name")));
+        Set<String> includes = new HashSet<>();
+        JsonApiOptions jsonApiOptions = JsonApiOptions.builder()
+                .fieldsByType(fields)
+                .includePaths(includes).build();
+        String result = JsonApiConverter.convert(dto, jsonApiOptions);
+        JsonNode json = mapper.readTree(result);
+        System.out.println(result);
+
+        // Should include only name attribute, no relationships
+        assertTrue(json.get("data").get("attributes").has("name"));
+        assertFalse(json.get("data").has("relationships"));
+    }
+
+    @Test
+    public void testShouldIncludeSingleRelationshipInRelationshipsWithoutIncluded() throws Exception {
+        ObjectDto dto = (ObjectDto) object.clone();
+        Map<String, Set<String>> fields = new HashMap<>();
+        fields.put("Object", new HashSet<>(Arrays.asList("name", "owner")));
+        Set<String> includes = new HashSet<>();
+        JsonApiOptions jsonApiOptions = JsonApiOptions.builder()
+                .fieldsByType(fields)
+                .includePaths(includes).build();
+        String result = JsonApiConverter.convert(dto, jsonApiOptions);
+        JsonNode json = mapper.readTree(result);
+        System.out.println(result);
+
+        // Should include owner in relationships with id/type, but not in included
+        assertTrue(json.get("data").has("relationships"));
+        JsonNode rel = json.get("data").get("relationships").get("owner");
+        assertEquals(dto.getOwner().getId(), rel.get("data").get("id").asText());
+        assertEquals("User", rel.get("data").get("type").asText());
+        assertFalse(json.has("included")); // Not included since not in includes
+    }
+
+    @Test
+    public void testShouldIncludeListRelationshipInRelationshipsWithoutIncluded() throws Exception {
+        UserDto dto = (UserDto) user.clone();
+        Map<String, Set<String>> fields = new HashMap<>();
+        fields.put("User", new HashSet<>(Arrays.asList("email", "childObjects")));
+        Set<String> includes = new HashSet<>();
+        JsonApiOptions jsonApiOptions = JsonApiOptions.builder()
+                .fieldsByType(fields)
+                .includePaths(includes).build();
+        String result = JsonApiConverter.convert(dto, jsonApiOptions);
+        JsonNode json = mapper.readTree(result);
+        System.out.println(result);
+
+        // Should include childObjects in relationships with ids/types
+        assertTrue(json.get("data").has("relationships"));
+        JsonNode rel = json.get("data").get("relationships").get("childObjects");
+        assertEquals(2, rel.get("data").size());
+        assertFalse(json.has("included"));
+    }
+
+    @Test
+    public void testShouldBehaveLikeIncludesWhenBothFieldsAndIncludesSpecified() throws Exception {
+        ObjectDto dto = (ObjectDto) object.clone();
+        Map<String, Set<String>> fields = new HashMap<>();
+        fields.put("Object", new HashSet<>(Collections.singletonList("owner")));
+        Set<String> includes = new HashSet<>(Collections.singletonList("owner"));
+        JsonApiOptions jsonApiOptions = JsonApiOptions.builder()
+                .fieldsByType(fields)
+                .includePaths(includes).build();
+        String result = JsonApiConverter.convert(dto, jsonApiOptions);
+        JsonNode json = mapper.readTree(result);
+
+        // Should behave like includes: relationship in relationships and full in included
+        assertTrue(json.get("data").has("relationships"));
+        assertTrue(json.has("included"));
+    }
+
+    @Test
+    public void testFieldInclusionModeIncludeAllWithInclude() throws Exception {
+        JsonApiOptions options = JsonApiOptions.builder()
+                .fieldInclusionMode(JsonApiOptions.AttributesInclusionMode.INCLUDE_ALL)
+                .includePaths(new HashSet<>(Collections.singletonList("mainObject")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(user, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        JsonNode primaryAttrs = root.get("data").get("attributes");
+        assertNotNull(primaryAttrs);
+        assertNotNull(primaryAttrs.get("username"));
+        assertNotNull(primaryAttrs.get("email"));
+        JsonNode relationships = root.get("data").get("relationships");
+        assertNotNull(relationships);
+        assertNotNull(relationships.get("mainObject"));
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+        boolean foundMainObject = false;
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            if ("Object".equals(inc.get("type").asText()) && user.getMainObject().getId().equals(inc.get("id").asText())) {
+                JsonNode incAttrs = inc.get("attributes");
+                assertNotNull(incAttrs);
+                assertNotNull(incAttrs.get("name"));
+                foundMainObject = true;
+                break;
+            }
+        }
+        assertTrue("mainObject with attributes should be in included", foundMainObject);
+    }
+
+    @Test
+    public void testFieldInclusionModeIncludeAllWithoutInclude() throws Exception {
+        JsonApiOptions options = JsonApiOptions.builder()
+                .fieldInclusionMode(JsonApiOptions.AttributesInclusionMode.INCLUDE_ALL)
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(user, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        JsonNode primaryAttrs = root.get("data").get("attributes");
+        assertNotNull(primaryAttrs);
+        assertNotNull(primaryAttrs.get("username"));
+        assertNotNull(primaryAttrs.get("email"));
+
+        assertTrue(root.path("included").isMissingNode()
+                || root.get("included").isEmpty());
+    }
+
+    @Test
+    public void testFieldInclusionModeIncludeAllWithSpecifiedFieldsForPrimary() throws Exception {
+        Map<String, Set<String>> fieldsByType = new HashMap<>();
+        fieldsByType.put("User", new HashSet<>(Collections.singletonList("username")));
+        JsonApiOptions options = JsonApiOptions.builder()
+                .fieldInclusionMode(JsonApiOptions.AttributesInclusionMode.INCLUDE_ALL)
+                .fieldsByType(fieldsByType)
+                .includePaths(new HashSet<>(Collections.singletonList("mainObject")))
+                .build();
+
+        String jsonStr = JsonApiConverter.convert(user, 1, options);
+        JsonNode root = mapper.readTree(jsonStr);
+
+        // Primary data attributes should include only specified fields
+        JsonNode primaryAttrs = root.get("data").get("attributes");
+        assertNotNull(primaryAttrs);
+        assertNotNull(primaryAttrs.get("username"));
+        assertNull(primaryAttrs.get("email")); // Not specified
+
+        // Relationships should include mainObject
+        JsonNode relationships = root.get("data").get("relationships");
+        assertNotNull(relationships);
+        assertNotNull(relationships.get("mainObject"));
+
+        // Included should contain mainObject with all attributes (since no fields specified for Object type)
+        ArrayNode included = (ArrayNode) root.get("included");
+        assertNotNull(included);
+        boolean foundMainObject = false;
+        for (int i = 0; i < included.size(); i++) {
+            JsonNode inc = included.get(i);
+            if ("Object".equals(inc.get("type").asText()) && user.getMainObject().getId().equals(inc.get("id").asText())) {
+                JsonNode incAttrs = inc.get("attributes");
+                assertNotNull(incAttrs);
+                assertNotNull(incAttrs.get("name"));
+                foundMainObject = true;
+                break;
+            }
+        }
+        assertTrue("mainObject with all attributes should be in included", foundMainObject);
     }
 }
