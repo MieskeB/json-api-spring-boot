@@ -8,7 +8,7 @@ import java.util.Collection;
 
 import static nl.michelbijnen.jsonapi.util.JsonApiConstants.*;
 
-class JsonApiParser {
+public class JsonApiParser {
     private final LinksParser linksParser;
     private final DataParser dataParser;
     private final IncludedParser includedParser;
@@ -29,7 +29,7 @@ class JsonApiParser {
      * @param mapper   Jackson {@link ObjectMapper} used to build nodes
      * @return the JSON:API document as an {@link ObjectNode}
      */
-    ObjectNode parse(Object object, int maxDepth, ObjectMapper mapper) {
+    public ObjectNode parse(Object object, int maxDepth, ObjectMapper mapper) {
         return parse(object, maxDepth, mapper, null);
     }
 
@@ -48,7 +48,7 @@ class JsonApiParser {
      * @param options  parsing options (e.g., sparse fieldsets, include paths); may be {@code null}
      * @return the JSON:API document as an {@link ObjectNode}
      */
-    ObjectNode parse(Object object, int maxDepth, ObjectMapper mapper, JsonApiOptions options) {
+    public ObjectNode parse(Object object, int maxDepth, ObjectMapper mapper, JsonApiOptions options) {
         if (object == null) {
             ObjectNode nullObject = mapper.createObjectNode();
             nullObject.set(DATA, mapper.createObjectNode());
