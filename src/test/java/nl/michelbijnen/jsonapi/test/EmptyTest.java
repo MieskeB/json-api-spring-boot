@@ -168,6 +168,6 @@ public class EmptyTest {
 
         JsonNode json = mapper.readTree(JsonApiConverter.convert(userDto));
         JsonNode jsonNode = json.get("data").get("attributes").get("username");
-        assertTrue(jsonNode.isEmpty());
+        assertNull(jsonNode);
     }
 }
