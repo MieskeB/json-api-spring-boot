@@ -33,6 +33,10 @@ class AttributesParser {
     ObjectNode parse(Object object, ObjectMapper mapper, JsonApiOptions options) {
         ObjectNode jsonObject = mapper.createObjectNode();
 
+        if (options != null && options.getFieldsByType().isEmpty()) {
+            return jsonObject;
+        }
+
         String type = null;
         if (options != null) {
             nl.michelbijnen.jsonapi.annotation.JsonApiObject ann =
@@ -50,7 +54,9 @@ class AttributesParser {
             }
 
             Object value = GetterAndSetter.callGetter(object, field.getName());
-            jsonObject.set(field.getName(), mapper.valueToTree(value));
+            if (value != null) {
+                jsonObject.set(field.getName(), mapper.valueToTree(value));
+            }
         }
         return jsonObject;
     }
