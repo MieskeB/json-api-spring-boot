@@ -11,7 +11,7 @@ jobs:
       with:
         java-version: '11'
         distribution: 'adopt' 
-        cache: maven
+        # cache: maven
     - name: 📦 Build with Maven
       run: mvn --batch-mode --update-snapshots test jacoco:report
       
