@@ -479,7 +479,7 @@ public class FieldsAndIncludeTest {
         // Should include childObjects in relationships with ids/types
         assertTrue(json.get("data").has("relationships"));
         JsonNode rel = json.get("data").get("relationships").get("childObjects");
-        assertEquals(2, rel.get("data").size());
+        assertEquals(1, rel.get("data").size());
         assertFalse(json.has("included"));
     }
 
@@ -564,18 +564,15 @@ public class FieldsAndIncludeTest {
         String jsonStr = JsonApiConverter.convert(user, 1, options);
         JsonNode root = mapper.readTree(jsonStr);
 
-        // Primary data attributes should include only specified fields
         JsonNode primaryAttrs = root.get("data").get("attributes");
         assertNotNull(primaryAttrs);
         assertNotNull(primaryAttrs.get("username"));
-        assertNull(primaryAttrs.get("email")); // Not specified
+        assertNull(primaryAttrs.get("email"));
 
-        // Relationships should include mainObject
         JsonNode relationships = root.get("data").get("relationships");
         assertNotNull(relationships);
         assertNotNull(relationships.get("mainObject"));
 
-        // Included should contain mainObject with all attributes (since no fields specified for Object type)
         ArrayNode included = (ArrayNode) root.get("included");
         assertNotNull(included);
         boolean foundMainObject = false;

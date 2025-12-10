@@ -27,36 +27,6 @@ class IncludedParser {
     }
 
     /**
-     * Recursively parses relation fields from the given object (or collection) into {@code includeArray}
-     * up to {@code maxDepth}, starting at {@code currentDepth}.
-     * <p>
-     * - Iterates over fields annotated with {@link JsonApiRelation}.
-     * - Supports relation values that are single objects, {@link Collection}s, or {@link Optional}s.
-     * - Avoids duplicates in {@code includeArray} based on resource type and id.
-     *
-     * @param object       the root object or an {@link Iterable} of objects to traverse
-     * @param includeArray the target "included" array to populate
-     * @param maxDepth     maximum relation depth to traverse (inclusive of the root at depth 0)
-     * @param currentDepth current traversal depth
-     * @param mapper       Jackson {@link ObjectMapper} used to create/compose nodes
-     */
-    void parse(Object object, ArrayNode includeArray, int maxDepth, int currentDepth, ObjectMapper mapper) {
-        if (currentDepth == maxDepth) {
-            return;
-        }
-
-        if (!(object instanceof Iterable)) {
-            parseObject(object, includeArray, maxDepth, currentDepth, mapper);
-            return;
-        }
-
-        Iterable<Object> collection = (Iterable<Object>) object;
-        for (Object item : collection) {
-            parseObject(item, includeArray, maxDepth, currentDepth, mapper);
-        }
-    }
-
-    /**
      * Convenience overload that creates a new {@link ArrayNode} and parses {@code object} into it,
      * up to {@code maxDepth}.
      *
@@ -89,52 +59,10 @@ class IncludedParser {
             return includeArray;
         }
 
-        if (!(object instanceof Iterable)) {
-            parseObject(object, includeArray, maxDepth, currentDepth, mapper, options);
-            return includeArray;
-        }
-
-        Iterable<Object> collection = (Iterable<Object>) object;
-        for (Object item : collection) {
-            parseObject(item, includeArray, maxDepth, currentDepth, mapper, options);
-        }
+        parseObject(object, includeArray, maxDepth, currentDepth, mapper, options);
         return includeArray;
     }
 
-    private void parseObject(Object object, ArrayNode includeArray, int maxDepth, int currentDepth,
-                             ObjectMapper mapper) {
-        for (Field relationField : object.getClass().getDeclaredFields()) {
-            if (!relationField.isAnnotationPresent(JsonApiRelation.class)) {
-                continue;
-            }
-
-            Object childRelationObject = GetterAndSetter.callGetter(object, relationField.getName());
-            if (childRelationObject instanceof Optional) {
-                Optional<?> opt = (Optional<?>) childRelationObject;
-                if (opt.isPresent()) {
-                    childRelationObject = opt.get();
-                } else {
-                    continue;
-                }
-            }
-            if (childRelationObject == null) {
-                continue;
-            }
-
-            if (this.isList(childRelationObject)) {
-                if (((Collection<Object>) childRelationObject).isEmpty()) {
-                    continue;
-                }
-                for (Object childRelationObjectAsItem : (Collection<Object>) childRelationObject) {
-                    this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem, mapper,null);
-                    this.parse(childRelationObjectAsItem, includeArray, maxDepth, currentDepth + 1, mapper);
-                }
-            } else {
-                this.addObjectToIncludeArray(includeArray, childRelationObject, mapper,null);
-                this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1, mapper);
-            }
-        }
-    }
 
     private void parseObject(Object object, ArrayNode includeArray, int maxDepth, int currentDepth, ObjectMapper mapper,
                              JsonApiOptions options) {
