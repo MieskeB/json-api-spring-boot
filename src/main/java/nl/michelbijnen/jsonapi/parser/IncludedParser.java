@@ -29,16 +29,16 @@ class IncludedParser {
     /**
      * Recursively parses relation fields from the given object (or collection) into {@code includeArray}
      * up to {@code maxDepth}, starting at {@code currentDepth}.
-     *
+     * <p>
      * - Iterates over fields annotated with {@link JsonApiRelation}.
      * - Supports relation values that are single objects, {@link Collection}s, or {@link Optional}s.
      * - Avoids duplicates in {@code includeArray} based on resource type and id.
      *
-     * @param object        the root object or an {@link Iterable} of objects to traverse
-     * @param includeArray  the target "included" array to populate
-     * @param maxDepth      maximum relation depth to traverse (inclusive of the root at depth 0)
-     * @param currentDepth  current traversal depth
-     * @param mapper        Jackson {@link ObjectMapper} used to create/compose nodes
+     * @param object       the root object or an {@link Iterable} of objects to traverse
+     * @param includeArray the target "included" array to populate
+     * @param maxDepth     maximum relation depth to traverse (inclusive of the root at depth 0)
+     * @param currentDepth current traversal depth
+     * @param mapper       Jackson {@link ObjectMapper} used to create/compose nodes
      */
     void parse(Object object, ArrayNode includeArray, int maxDepth, int currentDepth, ObjectMapper mapper) {
         if (currentDepth == maxDepth) {
@@ -75,12 +75,12 @@ class IncludedParser {
      * When {@code options.topLevelIncludeRelations()} is non-empty, only relations whose names match that set
      * are traversed at depth 0. Deeper levels are not restricted by this filter.
      *
-     * @param object        the root object or an {@link Iterable} of objects to traverse
-     * @param includeArray  the target "included" array
-     * @param maxDepth      maximum relation depth
-     * @param currentDepth  current traversal depth
-     * @param mapper        Jackson {@link ObjectMapper}
-     * @param options       options providing top-level relation filtering; may be {@code null}
+     * @param object       the root object or an {@link Iterable} of objects to traverse
+     * @param includeArray the target "included" array
+     * @param maxDepth     maximum relation depth
+     * @param currentDepth current traversal depth
+     * @param mapper       Jackson {@link ObjectMapper}
+     * @param options      options providing top-level relation filtering; may be {@code null}
      * @return the populated "included" array
      */
     ArrayNode parse(Object object, ArrayNode includeArray, int maxDepth, int currentDepth, ObjectMapper mapper,
@@ -126,11 +126,11 @@ class IncludedParser {
                     continue;
                 }
                 for (Object childRelationObjectAsItem : (Collection<Object>) childRelationObject) {
-                    this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem, mapper);
+                    this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem, mapper,null);
                     this.parse(childRelationObjectAsItem, includeArray, maxDepth, currentDepth + 1, mapper);
                 }
             } else {
-                this.addObjectToIncludeArray(includeArray, childRelationObject, mapper);
+                this.addObjectToIncludeArray(includeArray, childRelationObject, mapper,null);
                 this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1, mapper);
             }
         }
@@ -159,11 +159,11 @@ class IncludedParser {
                     continue;
                 }
                 for (Object childRelationObjectAsItem : (Collection<Object>) childRelationObject) {
-                    this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem, mapper);
+                    this.addObjectToIncludeArray(includeArray, childRelationObjectAsItem, mapper, options);
                     this.parse(childRelationObjectAsItem, includeArray, maxDepth, currentDepth + 1, mapper, options);
                 }
             } else {
-                this.addObjectToIncludeArray(includeArray, childRelationObject, mapper);
+                this.addObjectToIncludeArray(includeArray, childRelationObject, mapper, options);
                 this.parse(childRelationObject, includeArray, maxDepth, currentDepth + 1, mapper, options);
             }
         }
@@ -182,12 +182,15 @@ class IncludedParser {
         return childRelationObject;
     }
 
-    private void addObjectToIncludeArray(ArrayNode includeArray, Object relationObject, ObjectMapper mapper) {
+    private void addObjectToIncludeArray(ArrayNode includeArray, Object relationObject, ObjectMapper mapper,
+                                         JsonApiOptions options) {
         if (rootElementExists(includeArray, relationObject)) {
             return;
         }
 
-        ObjectNode singleIncludeObject = this.dataParser.parse(relationObject, mapper);
+        ObjectNode singleIncludeObject = (options != null) ?
+                this.dataParser.parse(relationObject, mapper, options) :
+                this.dataParser.parse(relationObject, mapper);
         ObjectNode links = this.linksParser.parse(relationObject, mapper);
         if (!links.isEmpty()) {
             singleIncludeObject.set(LINKS, links);
