@@ -1,4 +1,4 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.michelbijnen.jsonapi/json-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.michelbijnen.jsonapi/json-api)
+[![Maven Central](https://img.shields.io/maven-central/v/nl.michelbijnen.jsonapi/json-api.svg)](https://search.maven.org/artifact/nl.michelbijnen.jsonapi/json-api)
 [![Coverage Status](https://coveralls.io/repos/github/MieskeB/json-api-spring-boot/badge.svg?branch=master)](https://coveralls.io/github/MieskeB/json-api-spring-boot?branch=master)
 
 # json-api-spring-boot
